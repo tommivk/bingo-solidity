@@ -7,6 +7,14 @@ contract Bingo {
     uint public ticketCost;
     address public host;
 
+    struct Ticket {
+        uint8[25] card;
+        bool valid;
+        bool paidOut;
+    }
+
+    mapping(address => Ticket) public addressToTicket;
+
     constructor(uint _ticketCost) payable {
         ticketCost = _ticketCost;
         host = msg.sender;
