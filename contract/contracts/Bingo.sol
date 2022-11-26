@@ -18,6 +18,23 @@ contract Bingo {
     constructor(uint _ticketCost) payable {
         ticketCost = _ticketCost;
         host = msg.sender;
+        buyTicket();
+    }
+
+    function buyTicket() public payable {
+        require(msg.value >= ticketCost, "Insufficient amount sent");
+        require(
+            addressToTicket[msg.sender].card[0] == 0,
+            "You already own a ticket"
+        );
+        uint8[25] memory bingoCard = generateCard();
+
+        Ticket memory ticket;
+        ticket.valid = true;
+        ticket.card = bingoCard;
+        ticket.paidOut = false;
+
+        addressToTicket[msg.sender] = ticket;
     }
 
     function generateCard() private view returns (uint8[25] memory) {
