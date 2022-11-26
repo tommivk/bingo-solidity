@@ -37,6 +37,10 @@ contract Bingo {
         addressToTicket[msg.sender] = ticket;
     }
 
+    function getTicket() public view returns (uint8[25] memory) {
+        return addressToTicket[msg.sender].card;
+    }
+
     function generateCard() private view returns (uint8[25] memory) {
         uint8[] memory nums = getNumbers();
 
