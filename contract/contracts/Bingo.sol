@@ -17,13 +17,16 @@ contract Bingo {
     }
 
     uint public ticketCost;
+    uint8 maxPlayers;
+    uint8 playersJoined;
     address public host;
     GameState public gameState;
 
     mapping(address => Ticket) public addressToTicket;
 
-    constructor(uint _ticketCost) payable {
+    constructor(uint _ticketCost, uint8 _maxPlayers) payable {
         ticketCost = _ticketCost;
+        maxPlayers = _maxPlayers;
         host = msg.sender;
         buyTicket();
     }
@@ -35,6 +38,7 @@ contract Bingo {
 
     function buyTicket() public payable {
         require(gameState == GameState.SETUP, "The game has already started");
+        require(playersJoined < maxPlayers, "The game is full");
         require(msg.value >= ticketCost, "Insufficient amount sent");
         require(
             addressToTicket[msg.sender].card[0] == 0,
@@ -48,6 +52,8 @@ contract Bingo {
         ticket.paidOut = false;
 
         addressToTicket[msg.sender] = ticket;
+
+        playersJoined++;
     }
 
     function getTicket() public view returns (uint8[25] memory) {
