@@ -4,14 +4,21 @@ pragma solidity ^0.8.9;
 // import "hardhat/console.sol";
 
 contract Bingo {
-    uint public ticketCost;
-    address public host;
+    enum GameState {
+        SETUP,
+        RUNNING,
+        BINGOFOUND
+    }
 
     struct Ticket {
         uint8[25] card;
         bool valid;
         bool paidOut;
     }
+
+    uint public ticketCost;
+    address public host;
+    GameState public gameState;
 
     mapping(address => Ticket) public addressToTicket;
 
@@ -22,6 +29,7 @@ contract Bingo {
     }
 
     function buyTicket() public payable {
+        require(gameState == GameState.SETUP, "The game has already started");
         require(msg.value >= ticketCost, "Insufficient amount sent");
         require(
             addressToTicket[msg.sender].card[0] == 0,
