@@ -28,6 +28,11 @@ contract Bingo {
         buyTicket();
     }
 
+    modifier onlyHost() {
+        require(msg.sender == host, "Only game host can call this function");
+        _;
+    }
+
     function buyTicket() public payable {
         require(gameState == GameState.SETUP, "The game has already started");
         require(msg.value >= ticketCost, "Insufficient amount sent");
