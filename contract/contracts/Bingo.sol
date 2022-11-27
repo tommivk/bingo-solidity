@@ -36,6 +36,25 @@ contract Bingo {
         _;
     }
 
+    function leaveGame() public {
+        require(gameState == GameState.SETUP, "The game has already started");
+        require(
+            addressToTicket[msg.sender].valid == true,
+            "You are not a player"
+        );
+
+        if (msg.sender == host) {
+            host = address(0);
+        }
+
+        Ticket storage ticket = addressToTicket[msg.sender];
+        delete ticket.valid;
+        delete ticket.card;
+
+        payable(msg.sender).transfer(ticketCost);
+        playersJoined--;
+    }
+
     function buyTicket() public payable {
         require(gameState == GameState.SETUP, "The game has already started");
         require(playersJoined < maxPlayers, "The game is full");
