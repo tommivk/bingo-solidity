@@ -36,6 +36,11 @@ contract Bingo {
         _;
     }
 
+    function claimHost() public {
+        require(host == address(0));
+        host = msg.sender;
+    }
+
     function leaveGame() public {
         require(gameState == GameState.SETUP, "The game has already started");
         require(
