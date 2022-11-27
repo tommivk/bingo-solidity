@@ -35,6 +35,51 @@ contract Bingo {
         buyTicket();
     }
 
+    // Check for bingo
+    // Index 12 is a wildcard
+    function checkBingo(uint8[25] memory card) public view returns (bool) {
+        if (checkDiagonals(card)) return true;
+
+        for (uint i = 0; i < 5; i++) {
+            // Check rows
+            bool bingoFound = true;
+            for (uint j = 0; j < 5; j++) {
+                uint rowIndex = (i * 5) + j;
+                if (rowIndex == 12) continue;
+                if (!numbersDrawn[card[rowIndex]]) {
+                    bingoFound = false;
+                }
+            }
+            if (bingoFound) return true;
+
+            // Check columns
+            bingoFound = true;
+            for (uint j = 0; j < 5; j++) {
+                uint columnIndex = (5 * j) + i;
+                if (columnIndex == 12) continue;
+                if (!numbersDrawn[card[columnIndex]]) {
+                    bingoFound = false;
+                }
+            }
+            if (bingoFound) return true;
+        }
+        return false;
+    }
+
+    function checkDiagonals(uint8[25] memory card) private view returns (bool) {
+        bool leftDiagonal = numbersDrawn[card[0]] &&
+            numbersDrawn[card[6]] &&
+            numbersDrawn[card[18]] &&
+            numbersDrawn[card[24]];
+
+        bool rightDiagonal = numbersDrawn[card[4]] &&
+            numbersDrawn[card[8]] &&
+            numbersDrawn[card[16]] &&
+            numbersDrawn[card[20]];
+
+        return (leftDiagonal || rightDiagonal) ? true : false;
+    }
+
     modifier onlyHost() {
         require(msg.sender == host, "Only game host can call this function");
         _;
