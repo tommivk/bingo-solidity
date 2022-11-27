@@ -43,10 +43,7 @@ contract Bingo {
 
     function leaveGame() public {
         require(gameState == GameState.SETUP, "The game has already started");
-        require(
-            addressToTicket[msg.sender].valid == true,
-            "You are not a player"
-        );
+        require(addressToTicket[msg.sender].valid, "You are not a player");
 
         if (msg.sender == host) {
             host = address(0);
