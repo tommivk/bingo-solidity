@@ -55,6 +55,11 @@ contract Bingo {
         playersJoined--;
     }
 
+    function startGame() public onlyHost {
+        require(gameState == GameState.SETUP, "The game has already started");
+        gameState = GameState.RUNNING;
+    }
+
     function buyTicket() public payable {
         require(gameState == GameState.SETUP, "The game has already started");
         require(playersJoined < maxPlayers, "The game is full");
