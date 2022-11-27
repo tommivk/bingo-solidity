@@ -24,9 +24,9 @@ contract Bingo {
     uint64 hostLastActionTime;
     address public host;
     GameState public gameState;
-    bool[76] public numbersDrawn;
 
     mapping(address => Ticket) public addressToTicket;
+    mapping(uint8 => bool) public numbersDrawn;
 
     constructor(uint _ticketCost, uint8 _maxPlayers) payable {
         ticketCost = _ticketCost;
