@@ -20,6 +20,8 @@ contract Bingo {
     uint8 maxPlayers;
     uint8 playersJoined;
     uint8 totalNumbersDrawn;
+    uint8 hostActionDeadline = 3 minutes;
+    uint64 hostLastActionTime;
     address public host;
     GameState public gameState;
     bool[76] public numbersDrawn;
@@ -44,10 +46,21 @@ contract Bingo {
         require(totalNumbersDrawn < 75, "All of the numbers have been drawn");
         totalNumbersDrawn++;
         numbersDrawn[totalNumbersDrawn] = true;
+        hostLastActionTime = uint64(block.timestamp);
+    }
+
+    function hostTimedOut() private view returns (bool) {
+        if (
+            gameState == GameState.RUNNING &&
+            block.timestamp > (hostLastActionTime + hostActionDeadline)
+        ) {
+            return true;
+        }
+        return false;
     }
 
     function claimHost() public {
-        require(host == address(0));
+        require(host == address(0) || hostTimedOut());
         host = msg.sender;
     }
 
@@ -70,6 +83,7 @@ contract Bingo {
     function startGame() public onlyHost {
         require(gameState == GameState.SETUP, "The game has already started");
         gameState = GameState.RUNNING;
+        hostLastActionTime = uint64(block.timestamp);
     }
 
     function buyTicket() public payable {
