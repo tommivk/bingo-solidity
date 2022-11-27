@@ -19,8 +19,10 @@ contract Bingo {
     uint public ticketCost;
     uint8 maxPlayers;
     uint8 playersJoined;
+    uint8 totalNumbersDrawn;
     address public host;
     GameState public gameState;
+    bool[76] public numbersDrawn;
 
     mapping(address => Ticket) public addressToTicket;
 
@@ -34,6 +36,14 @@ contract Bingo {
     modifier onlyHost() {
         require(msg.sender == host, "Only game host can call this function");
         _;
+    }
+
+    // TODO Implement chainlink VRF
+    function drawNumber() public onlyHost {
+        require(gameState == GameState.RUNNING, "The game is not running");
+        require(totalNumbersDrawn < 75, "All of the numbers have been drawn");
+        totalNumbersDrawn++;
+        numbersDrawn[totalNumbersDrawn] = true;
     }
 
     function claimHost() public {
