@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { smock, MockContract } from "@defi-wonderland/smock";
 import { Bingo, Bingo__factory } from "../typechain-types";
+import { time } from "@nomicfoundation/hardhat-network-helpers";
 
 const ticketCost = 200;
 const maxPlayers = 3;
@@ -49,6 +50,86 @@ describe("Bingo", function () {
       }
     });
     expect(set.size).to.equal(25);
+  });
+
+  it("Should not be possible to buy two tickets", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await expect(
+      bingo.connect(accountB).buyTicket({ value: ticketCost })
+    ).to.be.rejectedWith("You already own a ticket");
+  });
+
+  it("startGame should set game state to running and it should be callable only once", async () => {
+    let gameState = await bingo.gameState();
+    expect(gameState).to.equal(0);
+    await bingo.startGame();
+    gameState = await bingo.gameState();
+    expect(gameState).to.equal(1);
+
+    await expect(bingo.startGame()).to.be.rejectedWith(
+      "The game has already started"
+    );
+  });
+
+  it("Leaving the game should be possible in the setup phase and ticket cost should be refunded", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+
+    const balanceBefore = await ethers.provider.getBalance(accountB.address);
+    const tx = await bingo.connect(accountB).leaveGame();
+
+    const receipt = await tx.wait();
+    const gasUsed =
+      BigInt(receipt.cumulativeGasUsed) * BigInt(receipt.effectiveGasPrice);
+    const balanceAfter = await ethers.provider.getBalance(accountB.address);
+
+    expect(
+      balanceBefore.sub(balanceAfter.add(gasUsed)).add(ticketCost)
+    ).to.equal(0);
+
+    const ticket = await bingo.addressToTicket(accountB.address);
+    expect(ticket.valid).to.equal(false);
+  });
+
+  it("Leaving the game should not be possible after the game has started", async () => {
+    await bingo.startGame();
+    await expect(bingo.connect(accountB).leaveGame()).to.be.rejectedWith(
+      "The game has already started"
+    );
+  });
+
+  it("Leaving the game should not be possible when ticket has not been bought", async () => {
+    await expect(bingo.connect(accountB).leaveGame()).to.be.rejectedWith(
+      "You are not a player"
+    );
+  });
+
+  it("claimHost should reject when called in the setup phase", async () => {
+    await expect(
+      bingo.connect(accountB).claimHost()
+    ).to.be.revertedWithoutReason();
+  });
+
+  it("claimHost should reject when the game is running but the host has not timed out", async () => {
+    await bingo.startGame();
+    await expect(
+      bingo.connect(accountB).claimHost()
+    ).to.be.revertedWithoutReason();
+  });
+
+  it("claiming host should be possible when the host has timed out and hosts ticket should be invalidated", async () => {
+    await bingo.startGame();
+    await time.increase(200);
+    await bingo.connect(accountB).claimHost();
+    expect(await bingo.host()).to.equal(accountB.address);
+
+    const ticket = await bingo.addressToTicket(accountA.address);
+    expect(ticket.valid).to.equal(false);
+  });
+
+  it("claiming host should be possible when the host has left the game", async () => {
+    await bingo.leaveGame();
+    await bingo.connect(accountB).claimHost();
+    expect(await bingo.host()).to.equal(accountB.address);
   });
 });
 
