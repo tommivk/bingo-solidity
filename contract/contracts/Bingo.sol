@@ -67,6 +67,34 @@ contract Bingo {
         winnerCount++;
     }
 
+    bool lock = false;
+
+    function withdrawWinnings() public payable {
+        require(!lock);
+        lock = true;
+
+        require(
+            gameState == GameState.BINGOFOUND,
+            "The game has not ended yet"
+        );
+        require(
+            block.timestamp > (bingoFoundTime + bingoCallPeriod),
+            "Withdraw period has not started yet"
+        );
+        require(winners[msg.sender], "You are not a winner");
+
+        Ticket storage ticket = addressToTicket[msg.sender];
+        require(!ticket.paidOut, "You have already withdrawed");
+
+        (bool success, ) = payable(msg.sender).call{
+            value: (ticketCost * playersJoined) / winnerCount
+        }("");
+        require(success, "Failed to withdraw");
+
+        ticket.paidOut = true;
+        lock = false;
+    }
+
     // Check for bingo
     // Index 12 is a wildcard
     function checkBingo(uint8[25] memory card) public view returns (bool) {
