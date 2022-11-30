@@ -21,11 +21,16 @@ contract Bingo {
     uint8 playersJoined;
     uint8 totalNumbersDrawn;
     uint8 hostActionDeadline = 3 minutes;
+    uint8 public bingoCallPeriod = 3 minutes;
+    uint8 public winnerCount;
     uint64 hostLastActionTime;
+    uint64 public bingoFoundTime;
     address public host;
+
     GameState public gameState;
 
     mapping(address => Ticket) public addressToTicket;
+    mapping(address => bool) public winners;
     mapping(uint8 => bool) public numbersDrawn;
 
     constructor(uint _ticketCost, uint8 _maxPlayers) payable {
@@ -33,6 +38,33 @@ contract Bingo {
         maxPlayers = _maxPlayers;
         host = msg.sender;
         buyTicket();
+    }
+
+    function callBingo() public {
+        require(gameState > GameState.SETUP, "The game has not started yet");
+        require(!winners[msg.sender], "You have already won");
+        if (gameState == GameState.BINGOFOUND) {
+            require(
+                block.timestamp < (bingoFoundTime + bingoCallPeriod),
+                "Bingo call period has ended"
+            );
+        }
+
+        Ticket memory ticket = addressToTicket[msg.sender];
+        require(ticket.valid, "You don't have a valid ticket");
+
+        uint8[25] memory card = ticket.card;
+
+        bool bingo = checkBingo(card);
+        require(bingo, "There was no bingo :(");
+
+        if (bingoFoundTime == 0) {
+            bingoFoundTime = uint64(block.timestamp);
+            gameState = GameState.BINGOFOUND;
+        }
+
+        winners[msg.sender] = true;
+        winnerCount++;
     }
 
     // Check for bingo
