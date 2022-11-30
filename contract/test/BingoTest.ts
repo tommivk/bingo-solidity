@@ -13,9 +13,17 @@ let accountA: SignerWithAddress;
 let accountB: SignerWithAddress;
 let accountC: SignerWithAddress;
 
-describe("Bingo", function () {
-  let bingo: Contract;
+let bingo: Contract | MockContract<Bingo>;
 
+const setAllNumbersDrawn = async () => {
+  const allNumbers: Record<number, boolean> = {};
+  [...Array(76).keys()].slice(1).map((num) => (allNumbers[num] = true));
+  await bingo.setVariables({
+    numbersDrawn: allNumbers,
+  });
+};
+
+describe("Bingo", function () {
   beforeEach(async () => {
     const contract = await ethers.getContractFactory("Bingo");
     bingo = await contract.deploy(ticketCost, maxPlayers, {
@@ -134,8 +142,6 @@ describe("Bingo", function () {
 });
 
 describe("checkBingo tests", async () => {
-  let bingo: MockContract<Bingo>;
-
   beforeEach(async () => {
     const Contract = await smock.mock<Bingo__factory>("Bingo");
     bingo = await Contract.deploy(ticketCost, maxPlayers, {
