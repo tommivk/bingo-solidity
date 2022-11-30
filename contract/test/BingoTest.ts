@@ -227,3 +227,204 @@ describe("checkBingo tests", async () => {
     }
   });
 });
+
+describe("Call Bingo tests", () => {
+  beforeEach(async () => {
+    const Contract = await smock.mock<Bingo__factory>("Bingo");
+    bingo = await Contract.deploy(ticketCost, maxPlayers, {
+      value: ticketCost,
+    });
+    [accountA, accountB, accountC] = await ethers.getSigners();
+  });
+
+  it("callBingo should reject when the game has not been started", async () => {
+    await expect(bingo.callBingo()).to.be.rejectedWith(
+      "The game has not started yet"
+    );
+  });
+
+  it("callBingo should reject if the caller does not have a ticket", async () => {
+    await bingo.startGame();
+    await expect(bingo.connect(accountB).callBingo()).to.be.rejectedWith(
+      "You don't have a valid ticket"
+    );
+  });
+
+  it("callBingo should not make state changes when there is no bingo", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await expect(bingo.connect(accountB).callBingo()).to.be.rejectedWith(
+      "There was no bingo :("
+    );
+
+    expect(await bingo.winners(accountB.address)).to.equal(false);
+    expect(await bingo.winnerCount()).to.equal(0);
+    expect(await bingo.bingoFoundTime()).to.equal(0);
+    expect(await bingo.gameState()).to.equal(1);
+  });
+
+  it("callbingo should make the correct state changes when winner calls it", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+
+    const tx = await bingo.connect(accountB).callBingo();
+    const blockNumber = (await tx.wait()).blockNumber;
+    const txTime = (await ethers.provider.getBlock(blockNumber)).timestamp;
+
+    expect(await bingo.winners(accountB.address)).to.equal(true);
+    expect(await bingo.gameState()).to.equal(2);
+    expect(await bingo.winnerCount()).to.equal(1);
+    expect(await bingo.bingoFoundTime()).to.equal(txTime);
+  });
+
+  it("Should not be possible to call callBingo twice with a winning card", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+
+    await expect(bingo.connect(accountB).callBingo()).to.not.be.rejected;
+    await expect(bingo.connect(accountB).callBingo()).to.be.rejectedWith(
+      "You have already won"
+    );
+  });
+
+  it("Second winner should be able to call bingo", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.connect(accountC).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+    await expect(bingo.connect(accountB).callBingo()).to.not.be.rejected;
+    await expect(bingo.connect(accountC).callBingo()).to.not.be.rejected;
+
+    expect(await bingo.winnerCount()).to.equal(2);
+    expect(await bingo.winners(accountB.address)).to.equal(true);
+    expect(await bingo.winners(accountC.address)).to.equal(true);
+  });
+
+  it("Should not be possible to call callBingo after bingo call period has passed", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.connect(accountC).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+    await expect(bingo.connect(accountB).callBingo()).to.not.be.rejected;
+    const bingoCallDeadline = await bingo.bingoCallPeriod();
+
+    await time.increase(bingoCallDeadline);
+    await expect(bingo.connect(accountC).callBingo()).to.be.rejectedWith(
+      "Bingo call period has ended"
+    );
+  });
+});
+
+describe("Withdraw tests", () => {
+  let bingoCallPeriod: number;
+
+  beforeEach(async () => {
+    const Contract = await smock.mock<Bingo__factory>("Bingo");
+    bingo = await Contract.deploy(ticketCost, maxPlayers, {
+      value: ticketCost,
+    });
+    bingoCallPeriod = await bingo.bingoCallPeriod();
+    [accountA, accountB, accountC] = await ethers.getSigners();
+  });
+
+  const getBalanceIncrease = async (
+    account: SignerWithAddress,
+    fun: () => any
+  ) => {
+    const balanceBefore = await ethers.provider.getBalance(account.address);
+    const tx = await fun();
+    const receipt = await tx.wait();
+    const gasUsed = receipt.cumulativeGasUsed.mul(receipt.effectiveGasPrice);
+    const balanceAfter = await ethers.provider.getBalance(account.address);
+    return balanceAfter.add(gasUsed).sub(balanceBefore);
+  };
+
+  it("Should not be possible to withdraw before the game has ended", async () => {
+    await expect(bingo.connect(accountB).withdrawWinnings()).to.be.rejectedWith(
+      "The game has not ended yet"
+    );
+  });
+
+  it("Should not be possible to withdraw before bingo call period has ended", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+    await bingo.connect(accountB).callBingo();
+    await expect(bingo.connect(accountB).withdrawWinnings()).to.be.rejectedWith(
+      "Withdraw period has not started yet"
+    );
+  });
+
+  it("Should not be possible to withdraw without a winning ticket", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+    await bingo.callBingo();
+
+    await time.increase(bingoCallPeriod);
+    await expect(bingo.connect(accountB).withdrawWinnings()).to.be.rejectedWith(
+      "You are not a winner"
+    );
+  });
+
+  it("Winner should be able to withdraw and balance should be increased correct amount", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+    await bingo.connect(accountB).callBingo();
+
+    await time.increase(bingoCallPeriod);
+
+    const balanceIncrease = await getBalanceIncrease(
+      accountB,
+      bingo.connect(accountB).withdrawWinnings
+    );
+
+    expect(balanceIncrease).to.equal(ticketCost * 2);
+  });
+
+  it("Multiple winners should be able to withdraw and balances should be increased correctly", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.connect(accountC).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+
+    await bingo.callBingo();
+    await bingo.connect(accountB).callBingo();
+    await bingo.connect(accountC).callBingo();
+
+    await time.increase(bingoCallPeriod);
+
+    const increaseA = await getBalanceIncrease(
+      accountA,
+      bingo.withdrawWinnings
+    );
+    const increaseB = await getBalanceIncrease(
+      accountB,
+      bingo.connect(accountB).withdrawWinnings
+    );
+    const increaseC = await getBalanceIncrease(
+      accountC,
+      bingo.connect(accountC).withdrawWinnings
+    );
+    expect(increaseA).to.equal(ticketCost);
+    expect(increaseB).to.equal(ticketCost);
+    expect(increaseC).to.equal(ticketCost);
+  });
+
+  it("Winner should not be able to withdraw twice", async () => {
+    await bingo.connect(accountB).buyTicket({ value: ticketCost });
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+    await bingo.connect(accountB).callBingo();
+
+    await time.increase(bingoCallPeriod);
+
+    await bingo.connect(accountB).withdrawWinnings();
+    await expect(bingo.connect(accountB).withdrawWinnings()).to.be.rejectedWith(
+      "You have already withdrawed"
+    );
+  });
+});
