@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "npx hardhat compile && cp ./artifacts/contracts/Bingo.sol/Bingo.json ../frontend/abi && cp ./artifacts/contracts/BingoFactory.sol/BingoFactory.json ../frontend/abi"
   },
   "author": "tommivk",
   "license": "MIT",
