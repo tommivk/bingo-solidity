@@ -217,8 +217,10 @@ contract Bingo {
         playersJoined++;
     }
 
-    function getTicket() public view returns (uint8[25] memory) {
-        return addressToTicket[msg.sender].card;
+    function getTicket(
+        address _address
+    ) public view returns (uint8[25] memory) {
+        return addressToTicket[_address].card;
     }
 
     function generateCard() private view returns (uint8[25] memory) {
