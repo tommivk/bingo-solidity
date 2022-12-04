@@ -37,7 +37,7 @@ contract Bingo {
         host = _host;
         ticketCost = _ticketCost;
         maxPlayers = _maxPlayers;
-        buyTicket();
+        buyTicket(_host);
     }
 
     function callBingo() public {
@@ -197,13 +197,13 @@ contract Bingo {
         hostLastActionTime = uint64(block.timestamp);
     }
 
-    function buyTicket() public payable {
+    function buyTicket(address _to) public payable {
         require(gameState == GameState.SETUP, "The game has already started");
         require(playersJoined < maxPlayers, "The game is full");
         require(msg.value >= ticketCost, "Insufficient amount sent");
         require(
-            addressToTicket[msg.sender].card[0] == 0,
-            "You already own a ticket"
+            addressToTicket[_to].card[0] == 0,
+            "This address already owns a ticket"
         );
         uint8[25] memory bingoCard = generateCard();
 
@@ -212,7 +212,7 @@ contract Bingo {
         ticket.card = bingoCard;
         ticket.paidOut = false;
 
-        addressToTicket[msg.sender] = ticket;
+        addressToTicket[_to] = ticket;
 
         playersJoined++;
     }
