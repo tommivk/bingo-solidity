@@ -33,10 +33,10 @@ contract Bingo {
     mapping(address => bool) public winners;
     mapping(uint8 => bool) public numbersDrawn;
 
-    constructor(uint _ticketCost, uint8 _maxPlayers) payable {
+    constructor(address _host, uint _ticketCost, uint8 _maxPlayers) payable {
+        host = _host;
         ticketCost = _ticketCost;
         maxPlayers = _maxPlayers;
-        host = msg.sender;
         buyTicket();
     }
 

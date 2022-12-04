@@ -12,7 +12,11 @@ contract BingoFactory {
     }
 
     function createRoom(uint _ticketCost, uint8 _maxPlayers) public payable {
-        Bingo bingo = new Bingo{value: msg.value}(_ticketCost, _maxPlayers);
+        Bingo bingo = new Bingo{value: msg.value}(
+            msg.sender,
+            _ticketCost,
+            _maxPlayers
+        );
         contracts.push(bingo);
     }
 
