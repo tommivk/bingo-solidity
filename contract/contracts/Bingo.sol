@@ -17,13 +17,13 @@ contract Bingo {
     }
 
     uint public ticketCost;
-    uint8 maxPlayers;
-    uint8 playersJoined;
-    uint8 totalNumbersDrawn;
-    uint8 hostActionDeadline = 3 minutes;
+    uint8 public maxPlayers;
+    uint8 public playersJoined;
+    uint8 public totalNumbersDrawn;
+    uint8 public hostActionDeadline = 3 minutes;
     uint8 public bingoCallPeriod = 3 minutes;
     uint8 public winnerCount;
-    uint64 hostLastActionTime;
+    uint64 public hostLastActionTime;
     uint64 public bingoFoundTime;
     address public host;
 
