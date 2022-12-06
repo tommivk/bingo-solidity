@@ -163,6 +163,18 @@ contract Bingo {
         emit NumberDrawn(_number);
     }
 
+    function getDrawnNumbers() public view returns (uint8[] memory) {
+        uint8[] memory numbers = new uint8[](totalNumbersDrawn);
+        uint index = 0;
+        for (uint8 i = 1; i < 76; i++) {
+            if (numbersDrawn[i]) {
+                numbers[index] = i;
+                index++;
+            }
+        }
+        return numbers;
+    }
+
     function hostTimedOut() private view returns (bool) {
         if (
             gameState == GameState.RUNNING &&
