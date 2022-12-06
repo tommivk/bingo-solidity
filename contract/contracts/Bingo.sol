@@ -33,6 +33,13 @@ contract Bingo {
     mapping(address => bool) public winners;
     mapping(uint8 => bool) public numbersDrawn;
 
+    event BingoFound(address indexed _player);
+    event NumberDrawn(uint8 _number);
+    event TicketBought(address indexed _to);
+    event HostChanged(address indexed _newHost);
+    event PlayerLeft(address indexed _player);
+    event GameStarted(uint64 _timeStarted);
+
     constructor(address _host, uint _ticketCost, uint8 _maxPlayers) payable {
         host = _host;
         ticketCost = _ticketCost;
@@ -65,6 +72,7 @@ contract Bingo {
 
         winners[msg.sender] = true;
         winnerCount++;
+        emit BingoFound(msg.sender);
     }
 
     bool lock = false;
@@ -152,6 +160,7 @@ contract Bingo {
         totalNumbersDrawn++;
         numbersDrawn[totalNumbersDrawn] = true;
         hostLastActionTime = uint64(block.timestamp);
+        emit NumberDrawn(_number);
     }
 
     function hostTimedOut() private view returns (bool) {
@@ -173,6 +182,7 @@ contract Bingo {
             delete ticket.card;
         }
         host = msg.sender;
+        emit HostChanged(msg.sender);
     }
 
     function leaveGame() public {
@@ -189,12 +199,14 @@ contract Bingo {
 
         payable(msg.sender).transfer(ticketCost);
         playersJoined--;
+        emit PlayerLeft(msg.sender);
     }
 
     function startGame() public onlyHost {
         require(gameState == GameState.SETUP, "The game has already started");
         gameState = GameState.RUNNING;
         hostLastActionTime = uint64(block.timestamp);
+        emit GameStarted(hostLastActionTime);
     }
 
     function buyTicket(address _to) public payable {
@@ -215,6 +227,8 @@ contract Bingo {
         addressToTicket[_to] = ticket;
 
         playersJoined++;
+
+        emit TicketBought(_to);
     }
 
     function getTicket(address _address) public view returns (Ticket memory) {

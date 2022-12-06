@@ -7,6 +7,14 @@ contract BingoFactory {
     address public owner;
     Bingo[] contracts;
 
+    event NewRoomCreated(
+        address indexed _creator,
+        address indexed _contractAddress,
+        uint _ticketCost,
+        uint8 _maxPlayers
+    );
+    event OwnerChanged(address indexed _newOwner);
+
     constructor(address _owner) {
         owner = _owner;
     }
@@ -18,6 +26,12 @@ contract BingoFactory {
             _maxPlayers
         );
         contracts.push(bingo);
+        emit NewRoomCreated(
+            msg.sender,
+            address(bingo),
+            _ticketCost,
+            _maxPlayers
+        );
     }
 
     function getContracts() public view returns (Bingo[] memory) {
@@ -43,5 +57,6 @@ contract BingoFactory {
 
     function changeOwner(address _owner) public onlyOwner {
         owner = _owner;
+        emit OwnerChanged(_owner);
     }
 }
