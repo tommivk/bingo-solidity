@@ -154,11 +154,13 @@ contract Bingo {
     }
 
     // TODO Implement chainlink VRF
-    function drawNumber() public onlyHost {
+    function drawNumber(uint8 _number) public onlyHost {
+        require(_number > 0 && _number < 76, "Number must be between 1 and 75");
+        require(!numbersDrawn[_number], "Number has already been drawn");
         require(gameState == GameState.RUNNING, "The game is not running");
         require(totalNumbersDrawn < 75, "All of the numbers have been drawn");
         totalNumbersDrawn++;
-        numbersDrawn[totalNumbersDrawn] = true;
+        numbersDrawn[_number] = true;
         hostLastActionTime = uint64(block.timestamp);
         emit NumberDrawn(_number);
     }
