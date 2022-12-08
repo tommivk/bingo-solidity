@@ -252,6 +252,20 @@ contract Bingo {
         return addressToTicket[_address];
     }
 
+    function getBingoCards() public view returns (uint8[25][] memory) {
+        uint8[25][] memory tickets = new uint8[25][](joinedPlayers.length);
+
+        uint index = 0;
+        for (uint i = 0; i < joinedPlayers.length; i++) {
+            Ticket memory ticket = addressToTicket[joinedPlayers[i]];
+            if (ticket.valid) {
+                tickets[index] = ticket.card;
+                ++index;
+            }
+        }
+        return tickets;
+    }
+
     function generateCard() private view returns (uint8[25] memory) {
         uint8[] memory nums = getNumbers();
 
