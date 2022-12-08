@@ -27,6 +27,8 @@ contract Bingo {
     uint64 public bingoFoundTime;
     address public host;
 
+    address[] joinedPlayers;
+
     GameState public gameState;
 
     mapping(address => Ticket) public addressToTicket;
@@ -239,6 +241,7 @@ contract Bingo {
         ticket.paidOut = false;
 
         addressToTicket[_to] = ticket;
+        joinedPlayers.push(_to);
 
         playersJoined++;
 
