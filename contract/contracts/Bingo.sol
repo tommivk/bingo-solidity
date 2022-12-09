@@ -4,7 +4,7 @@ pragma solidity ^0.8.9;
 // import "hardhat/console.sol";
 
 contract Bingo {
-    enum GameState {
+    enum GameStatus {
         SETUP,
         RUNNING,
         BINGOFOUND
@@ -16,20 +16,23 @@ contract Bingo {
         bool paidOut;
     }
 
-    uint public ticketCost;
-    uint8 public maxPlayers;
-    uint8 public playersJoined;
-    uint8 public totalNumbersDrawn;
-    uint8 public hostActionDeadline = 3 minutes;
-    uint8 public bingoCallPeriod = 3 minutes;
-    uint8 public winnerCount;
-    uint64 public hostLastActionTime;
-    uint64 public bingoFoundTime;
+    struct GameState {
+        uint ticketCost;
+        uint8 maxPlayers;
+        uint8 playersJoined;
+        uint8 totalNumbersDrawn;
+        uint8 hostActionDeadline;
+        uint8 bingoCallPeriod;
+        uint8 winnerCount;
+        uint64 hostLastActionTime;
+        uint64 bingoFoundTime;
+        GameStatus gameStatus;
+        address[] joinedPlayers;
+    }
+
     address public host;
 
-    address[] joinedPlayers;
-
-    GameState public gameState;
+    GameState public game;
 
     mapping(address => Ticket) public addressToTicket;
     mapping(address => bool) public winners;
@@ -44,17 +47,28 @@ contract Bingo {
 
     constructor(address _host, uint _ticketCost, uint8 _maxPlayers) payable {
         host = _host;
-        ticketCost = _ticketCost;
-        maxPlayers = _maxPlayers;
+
+        game.ticketCost = _ticketCost;
+        game.maxPlayers = _maxPlayers;
+        game.bingoCallPeriod = 3 minutes;
+        game.hostActionDeadline = 3 minutes;
+
         buyTicket(_host);
     }
 
+    function getGame() public view returns (GameState memory) {
+        return game;
+    }
+
     function callBingo() public {
-        require(gameState > GameState.SETUP, "The game has not started yet");
+        require(
+            game.gameStatus > GameStatus.SETUP,
+            "The game has not started yet"
+        );
         require(!winners[msg.sender], "You have already won");
-        if (gameState == GameState.BINGOFOUND) {
+        if (game.gameStatus == GameStatus.BINGOFOUND) {
             require(
-                block.timestamp < (bingoFoundTime + bingoCallPeriod),
+                block.timestamp < (game.bingoFoundTime + game.bingoCallPeriod),
                 "Bingo call period has ended"
             );
         }
@@ -67,13 +81,13 @@ contract Bingo {
         bool bingo = checkBingo(card);
         require(bingo, "There was no bingo :(");
 
-        if (bingoFoundTime == 0) {
-            bingoFoundTime = uint64(block.timestamp);
-            gameState = GameState.BINGOFOUND;
+        if (game.bingoFoundTime == 0) {
+            game.bingoFoundTime = uint64(block.timestamp);
+            game.gameStatus = GameStatus.BINGOFOUND;
         }
 
         winners[msg.sender] = true;
-        winnerCount++;
+        game.winnerCount++;
         emit BingoFound(msg.sender);
     }
 
@@ -84,11 +98,11 @@ contract Bingo {
         lock = true;
 
         require(
-            gameState == GameState.BINGOFOUND,
+            game.gameStatus == GameStatus.BINGOFOUND,
             "The game has not ended yet"
         );
         require(
-            block.timestamp > (bingoFoundTime + bingoCallPeriod),
+            block.timestamp > (game.bingoFoundTime + game.bingoCallPeriod),
             "Withdraw period has not started yet"
         );
         require(winners[msg.sender], "You are not a winner");
@@ -97,7 +111,7 @@ contract Bingo {
         require(!ticket.paidOut, "You have already withdrawed");
 
         (bool success, ) = payable(msg.sender).call{
-            value: (ticketCost * playersJoined) / winnerCount
+            value: (game.ticketCost * game.playersJoined) / game.winnerCount
         }("");
         require(success, "Failed to withdraw");
 
@@ -159,16 +173,22 @@ contract Bingo {
     function drawNumber(uint8 _number) public onlyHost {
         require(_number > 0 && _number < 76, "Number must be between 1 and 75");
         require(!numbersDrawn[_number], "Number has already been drawn");
-        require(gameState == GameState.RUNNING, "The game is not running");
-        require(totalNumbersDrawn < 75, "All of the numbers have been drawn");
-        totalNumbersDrawn++;
+        require(
+            game.gameStatus == GameStatus.RUNNING,
+            "The game is not running"
+        );
+        require(
+            game.totalNumbersDrawn < 75,
+            "All of the numbers have been drawn"
+        );
+        game.totalNumbersDrawn++;
         numbersDrawn[_number] = true;
-        hostLastActionTime = uint64(block.timestamp);
+        game.hostLastActionTime = uint64(block.timestamp);
         emit NumberDrawn(_number);
     }
 
     function getDrawnNumbers() public view returns (uint8[] memory) {
-        uint8[] memory numbers = new uint8[](totalNumbersDrawn);
+        uint8[] memory numbers = new uint8[](game.totalNumbersDrawn);
         uint index = 0;
         for (uint8 i = 1; i < 76; i++) {
             if (numbersDrawn[i]) {
@@ -181,8 +201,9 @@ contract Bingo {
 
     function hostTimedOut() private view returns (bool) {
         if (
-            gameState == GameState.RUNNING &&
-            block.timestamp > (hostLastActionTime + hostActionDeadline)
+            game.gameStatus == GameStatus.RUNNING &&
+            block.timestamp >
+            (game.hostLastActionTime + game.hostActionDeadline)
         ) {
             return true;
         }
@@ -202,7 +223,10 @@ contract Bingo {
     }
 
     function leaveGame() public {
-        require(gameState == GameState.SETUP, "The game has already started");
+        require(
+            game.gameStatus == GameStatus.SETUP,
+            "The game has already started"
+        );
         require(addressToTicket[msg.sender].valid, "You are not a player");
 
         if (msg.sender == host) {
@@ -213,22 +237,28 @@ contract Bingo {
         delete ticket.valid;
         delete ticket.card;
 
-        payable(msg.sender).transfer(ticketCost);
-        playersJoined--;
+        payable(msg.sender).transfer(game.ticketCost);
+        game.playersJoined--;
         emit PlayerLeft(msg.sender);
     }
 
     function startGame() public onlyHost {
-        require(gameState == GameState.SETUP, "The game has already started");
-        gameState = GameState.RUNNING;
-        hostLastActionTime = uint64(block.timestamp);
-        emit GameStarted(hostLastActionTime);
+        require(
+            game.gameStatus == GameStatus.SETUP,
+            "The game has already started"
+        );
+        game.gameStatus = GameStatus.RUNNING;
+        game.hostLastActionTime = uint64(block.timestamp);
+        emit GameStarted(game.hostLastActionTime);
     }
 
     function buyTicket(address _to) public payable {
-        require(gameState == GameState.SETUP, "The game has already started");
-        require(playersJoined < maxPlayers, "The game is full");
-        require(msg.value >= ticketCost, "Insufficient amount sent");
+        require(
+            game.gameStatus == GameStatus.SETUP,
+            "The game has already started"
+        );
+        require(game.playersJoined < game.maxPlayers, "The game is full");
+        require(msg.value >= game.ticketCost, "Insufficient amount sent");
         require(
             addressToTicket[_to].card[0] == 0,
             "This address already owns a ticket"
@@ -241,9 +271,9 @@ contract Bingo {
         ticket.paidOut = false;
 
         addressToTicket[_to] = ticket;
-        joinedPlayers.push(_to);
+        game.joinedPlayers.push(_to);
 
-        playersJoined++;
+        game.playersJoined++;
 
         emit TicketBought(_to);
     }
@@ -253,11 +283,11 @@ contract Bingo {
     }
 
     function getBingoCards() public view returns (uint8[25][] memory) {
-        uint8[25][] memory tickets = new uint8[25][](joinedPlayers.length);
+        uint8[25][] memory tickets = new uint8[25][](game.joinedPlayers.length);
 
         uint index = 0;
-        for (uint i = 0; i < joinedPlayers.length; i++) {
-            Ticket memory ticket = addressToTicket[joinedPlayers[i]];
+        for (uint i = 0; i < game.joinedPlayers.length; i++) {
+            Ticket memory ticket = addressToTicket[game.joinedPlayers[i]];
             if (ticket.valid) {
                 tickets[index] = ticket.card;
                 ++index;
