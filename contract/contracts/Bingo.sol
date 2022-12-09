@@ -213,6 +213,7 @@ contract Bingo {
     function claimHost() public {
         bool timedOut = hostTimedOut();
         require(host == address(0) || timedOut);
+        require(addressToTicket[msg.sender].valid, "You are not a player");
         if (timedOut) {
             Ticket storage ticket = addressToTicket[host];
             delete ticket.valid;
