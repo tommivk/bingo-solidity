@@ -9,18 +9,20 @@ import {
   useContractEvent,
 } from "wagmi";
 import { ethers } from "ethers";
-import BingoFactory from "../abi/BingoFactory.json";
+import { abi as BingoFactoryAbi } from "../abi/BingoFactory";
+import { BingoFactoryContractData } from "../types";
 
-const BINGO_FACTORY_ADDRESS = process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS;
+const BINGO_FACTORY_ADDRESS =
+  process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
 
 const ticketCost = 200;
 const maxPlayers = 5;
 
 export default function Home() {
   const { address } = useAccount();
-  const contractData = {
+  const contractData: BingoFactoryContractData = {
     address: BINGO_FACTORY_ADDRESS,
-    abi: BingoFactory.abi,
+    abi: [...BingoFactoryAbi] as const,
   };
 
   const { config, error } = usePrepareContractWrite({
@@ -33,11 +35,10 @@ export default function Home() {
   });
   const { write: createRoom } = useContractWrite(config);
 
-  const { data, refetch }: { data?: Array<string>; refetch: any } =
-    useContractRead({
-      ...contractData,
-      functionName: "getContracts",
-    });
+  const { data, refetch } = useContractRead({
+    ...contractData,
+    functionName: "getContracts",
+  });
 
   useContractEvent({
     ...contractData,
