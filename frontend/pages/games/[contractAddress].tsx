@@ -32,7 +32,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     functionName: "getGame",
   });
 
-  const { data: host } = useContractRead({
+  const { data: host, refetch: updateHost } = useContractRead({
     ...contractData,
     functionName: "host",
   });
@@ -122,6 +122,23 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
 
   useContractEvent({
     ...contractData,
+    eventName: "PlayerLeft",
+    listener() {
+      updateGameState();
+      updateAllBingoCards();
+    },
+  });
+
+  useContractEvent({
+    ...contractData,
+    eventName: "HostChanged",
+    listener() {
+      updateHost();
+    },
+  });
+
+  useContractEvent({
+    ...contractData,
     eventName: "GameStarted",
     listener() {
       updateGameState();
@@ -161,7 +178,8 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         gameState={gameState}
         host={host}
         isHost={isHost}
-        contractAddress={contractAddress}
+        contractData={contractData}
+        ticket={ticket}
       />
 
       {gameState.gameStatus == GameStatus.SETUP && !ticket?.valid && (
