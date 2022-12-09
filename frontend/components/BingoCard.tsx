@@ -25,8 +25,10 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
   return (
     <div
       className={`${
-        size === "large" ? "w-[500px] p-10" : "w-[250px] p-4"
-      } bg-slate-800 max-w-[100vw] grid grid-cols-5 gap-2 select-none`}
+        size === "large"
+          ? "w-[500px] h-[500px] p-10"
+          : "w-[250px] h-[250px] p-4"
+      } box-content bg-slate-800 max-w-[100vw] grid grid-cols-5 gap-2 select-none`}
     >
       {card.map((num: number, index) => (
         <div
