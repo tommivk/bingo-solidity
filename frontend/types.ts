@@ -18,6 +18,12 @@ export type GameState = {
   joinedPlayers: readonly Address[];
 };
 
+export type Ticket = {
+  valid: boolean;
+  paidOut: boolean;
+  card: ReadonlyArray<number>;
+};
+
 const bingoABI = narrow(BingoAbi);
 const bingoFactoryABI = narrow(BingoFactoryAbi);
 
