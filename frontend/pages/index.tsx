@@ -11,6 +11,7 @@ import {
 import { ethers } from "ethers";
 import { abi as BingoFactoryAbi } from "../abi/BingoFactory";
 import { BingoFactoryContractData } from "../types";
+import Button from "../components/Button";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
@@ -57,7 +58,7 @@ export default function Home() {
       </Head>
       <Web3Button />
       connected address: {address}
-      <button onClick={() => createRoom?.()}>Create new room</button>
+      <Button onClick={() => createRoom?.()}>Create new room</Button>
       <h1>Rooms</h1>
       <ul>
         {data
