@@ -237,6 +237,18 @@ contract Bingo {
         delete ticket.valid;
         delete ticket.card;
 
+        uint playerIndex;
+        for (uint i = 0; i < game.joinedPlayers.length; i++) {
+            if (game.joinedPlayers[i] == msg.sender) {
+                playerIndex = i;
+                break;
+            }
+        }
+        game.joinedPlayers[playerIndex] = game.joinedPlayers[
+            game.joinedPlayers.length - 1
+        ];
+        game.joinedPlayers.pop();
+
         payable(msg.sender).transfer(game.ticketCost);
         game.playersJoined--;
         emit PlayerLeft(msg.sender);
