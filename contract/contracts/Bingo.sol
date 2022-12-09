@@ -232,6 +232,7 @@ contract Bingo {
 
         if (msg.sender == host) {
             host = address(0);
+            emit HostChanged(address(0));
         }
 
         Ticket storage ticket = addressToTicket[msg.sender];
