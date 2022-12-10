@@ -12,7 +12,7 @@ import { ToastContainer } from "react-toastify";
 const PROJECT_ID = process.env.WALLETCONNECT_PROJECT_ID ?? "";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const chains = [chain.hardhat];
+  const chains = [chain.goerli, chain.hardhat];
   const { provider } = configureChains(chains, [publicProvider()]);
 
   const client = createClient({
