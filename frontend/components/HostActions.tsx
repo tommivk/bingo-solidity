@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
 import { BingoContractData, GameState } from "../types";
 import { GameStatus } from "../constants";
+import { toast } from "react-toastify";
+import { parseErrorMessage } from "../util";
 import Button from "./Button";
 
 type Props = {
@@ -12,34 +14,69 @@ type Props = {
 const HostActions = ({ contractData, gameState }: Props) => {
   const [number, setNumber] = useState(1);
 
-  const { config: startGameConfig } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "startGame",
-    enabled: gameState?.gameStatus == 0 ? true : false,
-  });
-  const { write: startGame } = useContractWrite(startGameConfig);
+  const startGameEnabled = gameState.gameStatus === GameStatus.SETUP;
+  const drawNumberEnabled = gameState.gameStatus === GameStatus.RUNNING;
 
-  const { config: drawNumberConfig } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "drawNumber",
-    args: [number],
-    enabled: gameState?.gameStatus === GameStatus.RUNNING,
+  const { config: startGameConfig, error: prepareStartGameError } =
+    usePrepareContractWrite({
+      ...contractData,
+      functionName: "startGame",
+      enabled: startGameEnabled,
+    });
+
+  const { write: startGame } = useContractWrite({
+    ...startGameConfig,
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to start the game"));
+    },
+    onSuccess: async (data) => {
+      await data.wait();
+      toast.success("Game successfully started");
+    },
   });
-  const { write: drawNumber } = useContractWrite(drawNumberConfig);
+
+  const { config: drawNumberConfig, error: prepareDrawNumberError } =
+    usePrepareContractWrite({
+      ...contractData,
+      functionName: "drawNumber",
+      args: [number],
+      enabled: drawNumberEnabled,
+    });
+
+  const { write: drawNumber } = useContractWrite({
+    ...drawNumberConfig,
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to draw number"));
+    },
+  });
+
+  const handleStartGame = () => {
+    if (prepareStartGameError) {
+      return toast.error("Error");
+    }
+    startGame?.();
+  };
+
+  const handleDrawNumber = () => {
+    if (prepareDrawNumberError) {
+      return toast.error("Error");
+    }
+    drawNumber?.();
+  };
 
   return (
     <div>
-      {gameState.gameStatus == GameStatus.SETUP && (
-        <Button onClick={() => startGame?.()}>Start game</Button>
+      {startGameEnabled && (
+        <Button onClick={handleStartGame}>Start game</Button>
       )}
 
-      {gameState.gameStatus == GameStatus.RUNNING && (
+      {drawNumberEnabled && (
         <>
           <input
             type="number"
             onChange={({ target }) => setNumber(Number(target.value))}
           />
-          <Button onClick={() => drawNumber?.()}>Draw number</Button>
+          <Button onClick={handleDrawNumber}>Draw number</Button>
         </>
       )}
     </div>

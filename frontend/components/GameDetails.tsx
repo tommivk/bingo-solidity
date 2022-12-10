@@ -2,6 +2,8 @@ import { Address, useContractWrite, usePrepareContractWrite } from "wagmi";
 import { BingoContractData, GameState, Ticket } from "../types";
 import { ethers } from "ethers";
 import Button from "./Button";
+import { toast } from "react-toastify";
+import { parseErrorMessage } from "../util";
 
 type Props = {
   host: Address;
@@ -22,14 +24,28 @@ const GameDetails = ({
   const { maxPlayers, playersJoined, gameStatus } = gameState;
   const AddressZero = ethers.constants.AddressZero;
 
-  const claimHostEnabled = host === AddressZero && ticket?.valid;
+  const claimHostEnabled = host === AddressZero && !!ticket && ticket.valid;
 
-  const { config } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "claimHost",
-    enabled: claimHostEnabled,
+  const { config: claimHostConfig, error: prepareDrawHostError } =
+    usePrepareContractWrite({
+      ...contractData,
+      functionName: "claimHost",
+      enabled: claimHostEnabled,
+    });
+
+  const { write: claimHost } = useContractWrite({
+    ...claimHostConfig,
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to claim host"));
+    },
   });
-  const { write: claimHost } = useContractWrite(config);
+
+  const handleClaimHost = () => {
+    if (prepareDrawHostError) {
+      toast.error("Error");
+    }
+    claimHost?.();
+  };
 
   return (
     <div>
@@ -37,7 +53,7 @@ const GameDetails = ({
         <p>Game address {contractData.address}</p>
         Host: {host} {isHost && "(You)"}
         {claimHostEnabled && (
-          <Button onClick={() => claimHost?.()}>Claim host</Button>
+          <Button onClick={handleClaimHost}>Claim host</Button>
         )}
       </div>
       <div>Players joined: {playersJoined}</div>

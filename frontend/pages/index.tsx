@@ -12,6 +12,9 @@ import { ethers } from "ethers";
 import { abi as BingoFactoryAbi } from "../abi/BingoFactory";
 import { BingoFactoryContractData } from "../types";
 import Button from "../components/Button";
+import { toast } from "react-toastify";
+import { parseErrorMessage } from "../util";
+import Router from "next/router";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
@@ -26,7 +29,7 @@ export default function Home() {
     abi: [...BingoFactoryAbi] as const,
   };
 
-  const { config, error } = usePrepareContractWrite({
+  const { config } = usePrepareContractWrite({
     ...contractData,
     functionName: "createRoom",
     overrides: {
@@ -34,9 +37,18 @@ export default function Home() {
     },
     args: [ethers.BigNumber.from(ticketCost), maxPlayers],
   });
-  const { write: createRoom } = useContractWrite(config);
+  const { write: createRoom } = useContractWrite({
+    ...config,
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to create game"));
+    },
+    onSuccess: async (data) => {
+      await data.wait();
+      toast.success("New game created!");
+    },
+  });
 
-  const { data, refetch } = useContractRead({
+  const { data, refetch: refetchRooms } = useContractRead({
     ...contractData,
     functionName: "getContracts",
   });
@@ -44,8 +56,11 @@ export default function Home() {
   useContractEvent({
     ...contractData,
     eventName: "NewRoomCreated",
-    listener() {
-      refetch();
+    listener(creator, contractAddress, _ticketCost, _maxPlayers) {
+      if (creator === address) {
+        Router.push(`/games/${contractAddress}`);
+      }
+      refetchRooms();
     },
   });
 

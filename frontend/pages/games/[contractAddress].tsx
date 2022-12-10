@@ -6,7 +6,6 @@ import {
   usePrepareContractWrite,
   useAccount,
   useContractEvent,
-  Address,
 } from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
@@ -16,8 +15,12 @@ import Button from "../../components/Button";
 import BingoCardList from "../../components/BingoCardList";
 import { GameStatus } from "../../constants";
 import HostActions from "../../components/HostActions";
-import { Event } from "ethers";
+import { ethers } from "ethers";
 import { BingoContractData } from "../../types";
+import { toast } from "react-toastify";
+import { parseErrorMessage } from "../../util";
+
+const AddressZero = ethers.constants.AddressZero;
 
 const Game = ({ contractAddress }: { contractAddress: string }) => {
   const { address: account } = useAccount();
@@ -37,10 +40,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     functionName: "host",
   });
 
-  const isHost = useMemo(
-    () => account !== undefined && account === host,
-    [account, host]
-  );
+  const isHost = !!account && account === host;
 
   const { data: ticket, refetch: updateTicket } = useContractRead({
     ...contractData,
@@ -49,8 +49,20 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       from: account,
     },
     args: account && [account],
-    enabled: account !== undefined,
+    enabled: !!account,
   });
+
+  const leaveGameEnabled =
+    !!gameState &&
+    !!ticket &&
+    gameState.gameStatus === GameStatus.SETUP &&
+    ticket?.valid;
+
+  const joinGameEnabled =
+    !!gameState &&
+    !!ticket &&
+    gameState.gameStatus === GameStatus.SETUP &&
+    !ticket.valid;
 
   const { data: allBingoCards = [], refetch: updateAllBingoCards } =
     useContractRead({
@@ -68,72 +80,133 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     ...contractData,
     functionName: "winners",
     args: account && [account],
-    enabled: account !== undefined,
+    enabled: !!account,
   });
 
   const { data: isBingo, refetch: updateIsBingo } = useContractRead({
     ...contractData,
     functionName: "checkBingo",
     args: ticket && [ticket.card],
-    enabled: ticket !== undefined,
+    enabled: !!ticket,
   });
 
-  const { config: joinGameConfig } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "buyTicket",
-    overrides: {
-      value: gameState?.ticketCost,
+  const { config: joinGameConfig, error: prepareJoinGameError } =
+    usePrepareContractWrite({
+      ...contractData,
+      functionName: "buyTicket",
+      overrides: {
+        value: gameState?.ticketCost,
+      },
+      args: account && [account],
+      enabled: joinGameEnabled,
+    });
+  const { write: joinGame, isLoading: joinGameLoading } = useContractWrite({
+    ...joinGameConfig,
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to join the game"));
     },
-    args: account && [account],
-    enabled: gameState && ticket && !ticket.valid,
-  });
-  const { write: joinGame } = useContractWrite(joinGameConfig);
-
-  const { config: leaveGameConfig } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "leaveGame",
-    enabled:
-      gameState?.gameStatus === GameStatus.SETUP && ticket && ticket.valid,
-  });
-  const { write: leaveGame } = useContractWrite({
-    ...leaveGameConfig,
-    onSuccess() {
-      updateGameState();
-      updateAllBingoCards();
+    onSuccess: async (data) => {
+      await data.wait();
       updateTicket();
+      updateAllBingoCards();
+      updateGameState();
+      toast.success("Successfully joined");
     },
   });
 
-  const { config: callBingoConfig } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "callBingo",
-    overrides: {
-      from: account,
+  const { config: leaveGameConfig, error: prepareLeaveGameError } =
+    usePrepareContractWrite({
+      ...contractData,
+      functionName: "leaveGame",
+      enabled: leaveGameEnabled,
+    });
+
+  const { write: leaveGame, isLoading: leaveGameLoading } = useContractWrite({
+    ...leaveGameConfig,
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to leave the game"));
     },
-    enabled: gameState?.gameStatus !== GameStatus.SETUP && isBingo && !isWinner,
+    onSuccess: async (data) => {
+      await data.wait();
+      updateTicket();
+      updateAllBingoCards();
+      updateGameState();
+      toast.success("Successfully left the game");
+    },
   });
+
+  const callBingoEnabled =
+    !!gameState &&
+    gameState.gameStatus !== GameStatus.SETUP &&
+    typeof isBingo === "boolean" &&
+    isBingo &&
+    typeof isWinner === "boolean" &&
+    !isWinner;
+
+  const { config: callBingoConfig, error: prepareCallBingoError } =
+    usePrepareContractWrite({
+      ...contractData,
+      functionName: "callBingo",
+      overrides: {
+        from: account,
+      },
+      enabled: callBingoEnabled,
+    });
   const { write: callBingo } = useContractWrite({
     ...callBingoConfig,
-    onSuccess() {
-      updateGameState();
-      updateIsWinner();
+    onError({ message }) {
+      toast.error(parseErrorMessage(message, "Failed to call bingo"));
+    },
+    onSuccess: async (data) => {
+      await data.wait();
+      toast.success("Bingo successfully called!");
     },
   });
+
+  const handleLeaveGame = () => {
+    if (prepareLeaveGameError) {
+      return toast.error("Error");
+    }
+    leaveGame?.();
+  };
+
+  const handleJoinGame = () => {
+    if (prepareJoinGameError) {
+      return toast.error("Error");
+    }
+    joinGame?.();
+  };
+
+  const handleCallBingo = () => {
+    if (prepareCallBingoError) {
+      return toast.error("Error");
+    }
+    callBingo?.();
+  };
 
   useContractEvent({
     ...contractData,
     eventName: "PlayerLeft",
-    listener() {
-      updateGameState();
-      updateAllBingoCards();
+    listener(player, _event) {
+      if (player !== account) {
+        updateGameState();
+        updateAllBingoCards();
+      }
     },
   });
 
   useContractEvent({
     ...contractData,
     eventName: "HostChanged",
-    listener() {
+    listener(newHost) {
       updateHost();
+      if (newHost === AddressZero) {
+        return toast.info("The game host has left the game");
+      }
+      if (newHost === account) {
+        return toast.info("You are now the game host");
+      }
+      toast.info("The game host has changed");
     },
   });
 
@@ -142,27 +215,29 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     eventName: "GameStarted",
     listener() {
       updateGameState();
+      toast.info("The game started");
     },
   });
 
   useContractEvent({
     ...contractData,
     eventName: "NumberDrawn",
-    listener() {
+    listener(number) {
       updateDrawnNumbers();
       updateIsBingo();
+      toast.info(`New number drawn: ${number}`);
     },
   });
 
   useContractEvent({
     ...contractData,
     eventName: "TicketBought",
-    listener(_node: Address, label: Event) {
-      if (label?.args?._to === account) {
-        updateTicket();
+    listener(to) {
+      if (to !== account) {
+        updateAllBingoCards();
+        updateGameState();
+        toast.info("New player joined the game");
       }
-      updateAllBingoCards();
-      updateGameState();
     },
   });
 
@@ -182,15 +257,11 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         ticket={ticket}
       />
 
-      {gameState.gameStatus == GameStatus.SETUP && !ticket?.valid && (
-        <Button onClick={() => joinGame?.()}>Join game</Button>
+      {joinGameEnabled && <Button onClick={handleJoinGame}>Join game</Button>}
+      {leaveGameEnabled && (
+        <Button onClick={handleLeaveGame}>Leave game</Button>
       )}
-      {gameState.gameStatus == GameStatus.SETUP && ticket?.valid && (
-        <Button onClick={() => leaveGame?.()}>Leave game</Button>
-      )}
-      {isBingo && !isWinner && (
-        <Button onClick={() => callBingo?.()}>Bingo</Button>
-      )}
+      {callBingoEnabled && <Button onClick={handleCallBingo}>Bingo</Button>}
 
       <h2>Numbers drawn</h2>
       <ul>
