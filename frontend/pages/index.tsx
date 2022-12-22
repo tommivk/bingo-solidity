@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Link from "next/link";
 import { Web3Button } from "@web3modal/react";
 import {
   usePrepareContractWrite,
@@ -15,6 +14,7 @@ import Button from "../components/Button";
 import { toast } from "react-toastify";
 import { parseErrorMessage } from "../util";
 import Router from "next/router";
+import RoomList from "../components/RoomList";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
@@ -48,7 +48,7 @@ export default function Home() {
     },
   });
 
-  const { data, refetch: refetchRooms } = useContractRead({
+  const { data: rooms, refetch: refetchRooms } = useContractRead({
     ...contractData,
     functionName: "getContracts",
   });
@@ -72,19 +72,9 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Web3Button />
-      connected address: {address}
+      Connected address: {address}
       <Button onClick={() => createRoom?.()}>Create new room</Button>
-      <h1>Rooms</h1>
-      <ul>
-        {data
-          ?.slice(0)
-          .reverse()
-          .map((d: string) => (
-            <li key={d}>
-              <Link href={`/games/${d}`}>{d}</Link>
-            </li>
-          ))}
-      </ul>
+      <RoomList rooms={rooms} />
     </div>
   );
 }
