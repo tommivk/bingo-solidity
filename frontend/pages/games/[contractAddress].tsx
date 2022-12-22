@@ -1,23 +1,16 @@
 import Link from "next/link";
-import {
-  useContractRead,
-  useContractWrite,
-  usePrepareContractWrite,
-  useAccount,
-  useContractEvent,
-} from "wagmi";
+import { useContractRead, useAccount, useContractEvent } from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
 import BingoCard from "../../components/BingoCard";
 import GameDetails from "../../components/GameDetails";
 import Button from "../../components/Button";
 import BingoCardList from "../../components/BingoCardList";
-import { GameStatus } from "../../constants";
 import HostActions from "../../components/HostActions";
 import { ethers } from "ethers";
 import { BingoContractData } from "../../types";
 import { toast } from "react-toastify";
-import { parseErrorMessage } from "../../util";
+import PlayerActions from "../../components/PlayerActions";
 
 const AddressZero = ethers.constants.AddressZero;
 
@@ -39,8 +32,6 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     functionName: "host",
   });
 
-  const isHost = !!account && account === host;
-
   const { data: ticket, refetch: updateTicket } = useContractRead({
     ...contractData,
     functionName: "getTicket",
@@ -50,18 +41,6 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     args: account && [account],
     enabled: !!account,
   });
-
-  const leaveGameEnabled =
-    !!gameState &&
-    !!ticket &&
-    gameState.gameStatus === GameStatus.SETUP &&
-    ticket?.valid;
-
-  const joinGameEnabled =
-    !!gameState &&
-    !!ticket &&
-    gameState.gameStatus === GameStatus.SETUP &&
-    !ticket.valid;
 
   const { data: allBingoCards = [], refetch: updateAllBingoCards } =
     useContractRead({
@@ -88,94 +67,6 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     args: ticket && [ticket.card],
     enabled: !!ticket,
   });
-
-  const { config: joinGameConfig, error: prepareJoinGameError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "buyTicket",
-      overrides: {
-        value: gameState?.ticketCost,
-      },
-      args: account && [account],
-      enabled: joinGameEnabled,
-    });
-  const { write: joinGame, isLoading: joinGameLoading } = useContractWrite({
-    ...joinGameConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to join the game"));
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-      updateTicket();
-      updateAllBingoCards();
-      updateGameState();
-      toast.success("Successfully joined");
-    },
-  });
-
-  const { config: leaveGameConfig, error: prepareLeaveGameError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "leaveGame",
-      enabled: leaveGameEnabled,
-    });
-
-  const { write: leaveGame, isLoading: leaveGameLoading } = useContractWrite({
-    ...leaveGameConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to leave the game"));
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-      updateTicket();
-      updateAllBingoCards();
-      updateGameState();
-      toast.success("Successfully left the game");
-    },
-  });
-
-  const callBingoEnabled =
-    !!gameState &&
-    gameState.gameStatus !== GameStatus.SETUP &&
-    isBingo &&
-    !isWinner;
-
-  const { config: callBingoConfig, error: prepareCallBingoError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "callBingo",
-      overrides: {
-        from: account,
-      },
-      enabled: callBingoEnabled,
-    });
-  const { write: callBingo } = useContractWrite({
-    ...callBingoConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to call bingo"));
-    },
-  });
-
-  const handleLeaveGame = () => {
-    if (prepareLeaveGameError) {
-      return toast.error("Error");
-    }
-    leaveGame?.();
-  };
-
-  const handleJoinGame = () => {
-    if (prepareJoinGameError) {
-      return toast.error("Error");
-    }
-    joinGame?.();
-  };
-
-  const handleCallBingo = () => {
-    if (prepareCallBingoError) {
-      return toast.error("Error");
-    }
-    callBingo?.();
-  };
 
   useContractEvent({
     ...contractData,
@@ -251,10 +142,13 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     return "loading...";
   }
 
+  const isHost = !!account && account === host;
+
   return (
     <>
-      <Link href={"/"}>All games</Link>
-
+      <Link href={"/"}>
+        <Button>All games</Button>
+      </Link>
       <GameDetails
         gameState={gameState}
         host={host}
@@ -263,25 +157,12 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         ticket={ticket}
       />
 
-      {joinGameEnabled && (
-        <Button onClick={handleJoinGame} loading={joinGameLoading}>
-          Join game
-        </Button>
-      )}
-      {leaveGameEnabled && (
-        <Button onClick={handleLeaveGame} loading={leaveGameLoading}>
-          Leave game
-        </Button>
-      )}
-      {callBingoEnabled && <Button onClick={handleCallBingo}>Bingo</Button>}
-
       <h2>Numbers drawn</h2>
       <ul>
         {numbersDrawn.map((num) => (
           <li key={num}>{num}</li>
         ))}
       </ul>
-
       <div className="flex justify-evenly">
         {ticket && ticket.valid && (
           <BingoCard card={ticket.card} numbersDrawn={numbersDrawn} />
@@ -294,6 +175,17 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       {isHost && (
         <HostActions gameState={gameState} contractData={contractData} />
       )}
+      <PlayerActions
+        contractData={contractData}
+        account={account}
+        gameState={gameState}
+        ticket={ticket}
+        updateTicket={updateTicket}
+        updateAllBingoCards={updateAllBingoCards}
+        updateGameState={updateGameState}
+        isBingo={isBingo}
+        isWinner={isWinner}
+      />
     </>
   );
 };
