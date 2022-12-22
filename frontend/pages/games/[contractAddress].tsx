@@ -157,10 +157,6 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to call bingo"));
     },
-    onSuccess: async (data) => {
-      await data.wait();
-      toast.success("Bingo successfully called!");
-    },
   });
 
   const handleLeaveGame = () => {
@@ -238,6 +234,19 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         updateGameState();
         toast.info("New player joined the game");
       }
+    },
+  });
+
+  useContractEvent({
+    ...contractData,
+    eventName: "BingoFound",
+    listener(address) {
+      if (address === account) {
+        toast.info("Bingo successfully called!");
+      } else {
+        toast.info("Bingo has been found!");
+      }
+      updateGameState();
     },
   });
 
