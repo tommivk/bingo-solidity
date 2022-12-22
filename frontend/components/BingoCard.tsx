@@ -25,16 +25,14 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
   return (
     <div
       className={`${
-        size === "large"
-          ? "w-[500px] h-[500px] p-10"
-          : "w-[250px] h-[250px] p-4"
+        size === "large" ? "w-[400px] h-[400px] p-6" : "w-[200px] h-[200px] p-2"
       } box-content bg-slate-800 max-w-[100vw] grid grid-cols-5 gap-2 select-none`}
     >
       {card.map((num: number, index) => (
         <div
           key={num}
           className={`${
-            size === "large" ? "p-5" : "p-2"
+            size === "large" ? "p-5" : "p-1"
           } bg-slate-700 text-slate-200 flex items-center justify-center ${
             markedNumbers[index] || index == 12 ? "bg-red-500" : ""
           }`}
