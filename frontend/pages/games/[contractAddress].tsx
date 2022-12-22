@@ -76,14 +76,14 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       functionName: "getDrawnNumbers",
     });
 
-  const { data: isWinner, refetch: updateIsWinner } = useContractRead({
+  const { data: isWinner = false } = useContractRead({
     ...contractData,
     functionName: "winners",
     args: account && [account],
     enabled: !!account,
   });
 
-  const { data: isBingo, refetch: updateIsBingo } = useContractRead({
+  const { data: isBingo = false, refetch: updateIsBingo } = useContractRead({
     ...contractData,
     functionName: "checkBingo",
     args: ticket && [ticket.card],
@@ -138,9 +138,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
   const callBingoEnabled =
     !!gameState &&
     gameState.gameStatus !== GameStatus.SETUP &&
-    typeof isBingo === "boolean" &&
     isBingo &&
-    typeof isWinner === "boolean" &&
     !isWinner;
 
   const { config: callBingoConfig, error: prepareCallBingoError } =
