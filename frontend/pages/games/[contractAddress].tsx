@@ -257,9 +257,15 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         ticket={ticket}
       />
 
-      {joinGameEnabled && <Button onClick={handleJoinGame}>Join game</Button>}
+      {joinGameEnabled && (
+        <Button onClick={handleJoinGame} loading={joinGameLoading}>
+          Join game
+        </Button>
+      )}
       {leaveGameEnabled && (
-        <Button onClick={handleLeaveGame}>Leave game</Button>
+        <Button onClick={handleLeaveGame} loading={leaveGameLoading}>
+          Leave game
+        </Button>
       )}
       {callBingoEnabled && <Button onClick={handleCallBingo}>Bingo</Button>}
 
