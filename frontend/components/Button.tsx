@@ -9,7 +9,7 @@ const Button = ({ children, loading, ...props }: Props) => {
   return (
     <button
       {...props}
-      className={`${props.className} relative rounded-lg bg-slate-700 disabled:bg-slate-700 disabled:pointer-events-none hover:bg-slate-600 px-5 py-2 text-slate-200`}
+      className={`${props.className} relative rounded-lg bg-slate-700 disabled:bg-slate-800 border-2 border-slate-600 focus:border-slate-500 disabled:text-slate-500 disabled:pointer-events-none hover:bg-slate-600 px-5 py-2 text-slate-200`}
     >
       <span className={`${loading ? "invisible" : ""}`}>
         {children}
