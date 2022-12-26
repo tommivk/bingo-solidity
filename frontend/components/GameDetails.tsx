@@ -33,7 +33,7 @@ const GameDetails = ({
       enabled: claimHostEnabled,
     });
 
-  const { write: claimHost } = useContractWrite({
+  const { write: claimHost, isLoading: claimHostLoading } = useContractWrite({
     ...claimHostConfig,
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to claim host"));
@@ -53,7 +53,9 @@ const GameDetails = ({
         <p>Game address {contractData.address}</p>
         Host: {host} {isHost && "(You)"}
         {claimHostEnabled && (
-          <Button onClick={handleClaimHost}>Claim host</Button>
+          <Button onClick={handleClaimHost} loading={claimHostLoading}>
+            Claim host
+          </Button>
         )}
       </div>
       <div>Players joined: {playersJoined}</div>

@@ -37,7 +37,7 @@ export default function Home() {
     },
     args: [ethers.BigNumber.from(ticketCost), maxPlayers],
   });
-  const { write: createRoom } = useContractWrite({
+  const { write: createRoom, isLoading: createRoomLoading } = useContractWrite({
     ...config,
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to create game"));
@@ -73,7 +73,9 @@ export default function Home() {
       </Head>
       <Web3Button />
       Connected address: {address}
-      <Button onClick={() => createRoom?.()}>Create new room</Button>
+      <Button onClick={() => createRoom?.()} loading={createRoomLoading}>
+        Create new room
+      </Button>
       <RoomList rooms={rooms} />
     </div>
   );

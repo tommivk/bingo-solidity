@@ -100,7 +100,7 @@ const PlayerActions = ({
       },
       enabled: callBingoEnabled,
     });
-  const { write: callBingo } = useContractWrite({
+  const { write: callBingo, isLoading: callBingoLoading } = useContractWrite({
     ...callBingoConfig,
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to call bingo"));
@@ -140,7 +140,15 @@ const PlayerActions = ({
           Leave game
         </Button>
       )}
-      {callBingoEnabled && <Button onClick={handleCallBingo}>Bingo</Button>}
+      {!isWinner && gameState.gameStatus !== GameStatus.SETUP && (
+        <Button
+          onClick={handleCallBingo}
+          disabled={!callBingoEnabled}
+          loading={callBingoLoading}
+        >
+          Call Bingo
+        </Button>
+      )}
     </div>
   );
 };
