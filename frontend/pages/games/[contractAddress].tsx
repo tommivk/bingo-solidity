@@ -5,12 +5,12 @@ import { abi } from "../../abi/Bingo";
 import BingoCard from "../../components/BingoCard";
 import GameDetails from "../../components/GameDetails";
 import Button from "../../components/Button";
-import BingoCardList from "../../components/BingoCardList";
 import HostActions from "../../components/HostActions";
 import { ethers } from "ethers";
 import { BingoContractData } from "../../types";
 import { toast } from "react-toastify";
 import PlayerActions from "../../components/PlayerActions";
+import GameInfoCard from "../../components/GameInfoCard";
 
 const AddressZero = ethers.constants.AddressZero;
 
@@ -149,6 +149,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       <Link href={"/"}>
         <Button>All games</Button>
       </Link>
+
       <GameDetails
         gameState={gameState}
         host={host}
@@ -157,21 +158,9 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         ticket={ticket}
       />
 
-      <h2>Numbers drawn</h2>
-      <ul>
-        {numbersDrawn.map((num) => (
-          <li key={num}>{num}</li>
-        ))}
-      </ul>
       <div className="flex justify-evenly">
-        {ticket && (
-          <BingoCard
-            card={ticket.card}
-            numbersDrawn={numbersDrawn}
-            validTicket={ticket.valid}
-          />
-        )}
-        <BingoCardList
+        {ticket && <BingoCard card={ticket.card} numbersDrawn={numbersDrawn} />}
+        <GameInfoCard
           allBingoCards={allBingoCards}
           numbersDrawn={numbersDrawn}
         />
