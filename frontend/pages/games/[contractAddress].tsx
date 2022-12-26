@@ -145,7 +145,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
   const isHost = !!account && account === host;
 
   return (
-    <>
+    <div className="mb-28">
       <Link href={"/"}>
         <Button>All games</Button>
       </Link>
@@ -164,29 +164,35 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         ))}
       </ul>
       <div className="flex justify-evenly">
-        {ticket && ticket.valid && (
-          <BingoCard card={ticket.card} numbersDrawn={numbersDrawn} />
+        {ticket && (
+          <BingoCard
+            card={ticket.card}
+            numbersDrawn={numbersDrawn}
+            validTicket={ticket.valid}
+          />
         )}
         <BingoCardList
           allBingoCards={allBingoCards}
           numbersDrawn={numbersDrawn}
         />
       </div>
-      {isHost && (
-        <HostActions gameState={gameState} contractData={contractData} />
-      )}
-      <PlayerActions
-        contractData={contractData}
-        account={account}
-        gameState={gameState}
-        ticket={ticket}
-        updateTicket={updateTicket}
-        updateAllBingoCards={updateAllBingoCards}
-        updateGameState={updateGameState}
-        isBingo={isBingo}
-        isWinner={isWinner}
-      />
-    </>
+      <div className="fixed bottom-0 w-full">
+        {isHost && (
+          <HostActions gameState={gameState} contractData={contractData} />
+        )}
+        <PlayerActions
+          contractData={contractData}
+          account={account}
+          gameState={gameState}
+          ticket={ticket}
+          updateTicket={updateTicket}
+          updateAllBingoCards={updateAllBingoCards}
+          updateGameState={updateGameState}
+          isBingo={isBingo}
+          isWinner={isWinner}
+        />
+      </div>
+    </div>
   );
 };
 

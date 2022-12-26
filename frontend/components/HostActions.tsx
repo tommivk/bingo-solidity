@@ -65,7 +65,7 @@ const HostActions = ({ contractData, gameState }: Props) => {
   };
 
   return (
-    <div>
+    <div className="flex justify-center items-center mb-4">
       {startGameEnabled && (
         <Button onClick={handleStartGame}>Start game</Button>
       )}

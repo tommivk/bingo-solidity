@@ -129,7 +129,7 @@ const PlayerActions = ({
   };
 
   return (
-    <div>
+    <div className="h-20 bg-darkSecondary w-full flex justify-center items-center">
       {joinGameEnabled && (
         <Button onClick={handleJoinGame} loading={joinGameLoading}>
           Join game
