@@ -73,7 +73,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       functionName: "getDrawnNumbers",
     });
 
-  const { data: isWinner = false } = useContractRead({
+  const { data: isWinner = false, refetch: updateIsWinner } = useContractRead({
     ...contractData,
     functionName: "winners",
     args: account && [account],
@@ -154,6 +154,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         toast.info("Bingo has been found!");
       }
       updateGameState();
+      updateIsWinner();
     },
   });
 
