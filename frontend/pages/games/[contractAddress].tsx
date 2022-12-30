@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { useContractRead, useAccount, useContractEvent } from "wagmi";
+import {
+  useContractRead,
+  useAccount,
+  useContractEvent,
+  useBlockNumber,
+  useProvider,
+} from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
 import BingoCard from "../../components/BingoCard";
@@ -7,15 +13,28 @@ import GameDetails from "../../components/GameDetails";
 import Button from "../../components/Button";
 import HostActions from "../../components/HostActions";
 import { ethers } from "ethers";
+import { Block } from "@ethersproject/abstract-provider";
 import { BingoContractData } from "../../types";
 import { toast } from "react-toastify";
 import PlayerActions from "../../components/PlayerActions";
 import GameInfoCard from "../../components/GameInfoCard";
+import { useState } from "react";
 
 const AddressZero = ethers.constants.AddressZero;
 
 const Game = ({ contractAddress }: { contractAddress: string }) => {
+  const [block, setBlock] = useState<Block>();
+
   const { address: account } = useAccount();
+
+  const provider = useProvider();
+
+  const {} = useBlockNumber({
+    onBlock: async (blockNumber) => {
+      const block = await provider.getBlock(blockNumber);
+      setBlock(block);
+    },
+  });
 
   const contractData: BingoContractData = {
     address: contractAddress,
@@ -179,6 +198,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
           updateGameState={updateGameState}
           isBingo={isBingo}
           isWinner={isWinner}
+          block={block}
         />
       </div>
     </div>

@@ -4,6 +4,7 @@ import { GameStatus } from "../constants";
 import { BingoContractData, GameState, Ticket } from "../types";
 import { parseErrorMessage } from "../util";
 import Button from "./Button";
+import { Block } from "@ethersproject/abstract-provider";
 
 type Props = {
   contractData: BingoContractData;
@@ -15,6 +16,7 @@ type Props = {
   updateGameState: () => void;
   isBingo: boolean;
   isWinner: boolean;
+  block: Block | undefined;
 };
 
 const PlayerActions = ({
@@ -27,6 +29,7 @@ const PlayerActions = ({
   updateGameState,
   isBingo,
   isWinner,
+  block,
 }: Props) => {
   const leaveGameEnabled =
     gameState &&
