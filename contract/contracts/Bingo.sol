@@ -2,8 +2,10 @@
 pragma solidity ^0.8.9;
 
 // import "hardhat/console.sol";
+import "./VRFConsumerBaseV2.sol";
+import "./VRFCoordinatorV2Interface.sol";
 
-contract Bingo {
+contract Bingo is VRFConsumerBaseV2 {
     enum GameStatus {
         SETUP,
         RUNNING,
@@ -45,15 +47,50 @@ contract Bingo {
     event PlayerLeft(address indexed _player);
     event GameStarted(uint64 _timeStarted);
 
-    constructor(address _host, uint _ticketCost, uint8 _maxPlayers) payable {
-        host = _host;
+    VRFCoordinatorV2Interface COORDINATOR;
+    address vrfCoordinator;
+    bytes32 vrfKeyHash;
+    uint256[] public vrfRandomWords;
+    uint256 public vrfRequestId;
+    uint64 public vrfSubscriptionId;
+    uint32 vrfCallbackGasLimit = 100000;
+    uint16 vrfRequestConfirmations = 3;
+    uint32 vrfNumWords = 1;
 
+    constructor(
+        address _host,
+        uint _ticketCost,
+        uint8 _maxPlayers,
+        address _vrfCoordinator,
+        uint64 _vrfSubscriptionId,
+        bytes32 _vrfKeyHash
+    ) payable VRFConsumerBaseV2(_vrfCoordinator) {
+        host = _host;
+        COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+        vrfSubscriptionId = _vrfSubscriptionId;
+        vrfKeyHash = _vrfKeyHash;
         game.ticketCost = _ticketCost;
         game.maxPlayers = _maxPlayers;
         game.bingoCallPeriod = 3 minutes;
         game.hostActionDeadline = 3 minutes;
-
         buyTicket(_host);
+    }
+
+    function requestRandomWords() external onlyHost {
+        vrfRequestId = COORDINATOR.requestRandomWords(
+            vrfKeyHash,
+            vrfSubscriptionId,
+            vrfRequestConfirmations,
+            vrfCallbackGasLimit,
+            vrfNumWords
+        );
+    }
+
+    function fulfillRandomWords(
+        uint256 /* requestId */,
+        uint256[] memory randomWords
+    ) internal override {
+        vrfRandomWords = randomWords;
     }
 
     function getGame() public view returns (GameState memory) {
