@@ -5,8 +5,8 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const ALCHEMY_API_URL = process.env.ALCHEMY_API_URL;
-const GOERLI_PRIVATE_KEY = process.env.GOERLI_PRIVATE_KEY;
+const ALCHEMY_GOERLI_API_URL = process.env.ALCHEMY_GOERLI_API_URL ?? "";
+const PRIVATE_KEY = process.env.PRIVATE_KEY ?? "";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -31,8 +31,8 @@ const config: HardhatUserConfig = {
       },
     },
     goerli: {
-      url: ALCHEMY_API_URL,
-      accounts: [GOERLI_PRIVATE_KEY!],
+      url: ALCHEMY_GOERLI_API_URL,
+      accounts: [PRIVATE_KEY],
       gasPrice: 4000000000,
     },
   },
