@@ -4,7 +4,9 @@ async function main() {
   const [deployer] = await ethers.getSigners();
 
   const BingoFactory = await ethers.getContractFactory("BingoFactory");
-  const bingoFactory = await BingoFactory.deploy(deployer.address);
+  const bingoFactory = await BingoFactory.deploy(deployer.address, {
+    gasLimit: 9000000,
+  });
 
   await bingoFactory.deployed();
 
