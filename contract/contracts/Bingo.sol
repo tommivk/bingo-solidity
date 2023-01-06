@@ -30,6 +30,7 @@ contract Bingo is VRFConsumerBaseV2 {
         uint64 bingoFoundTime;
         GameStatus gameStatus;
         address[] joinedPlayers;
+        uint8[] numbersLeft;
     }
 
     address public host;
@@ -55,6 +56,7 @@ contract Bingo is VRFConsumerBaseV2 {
     uint32 vrfCallbackGasLimit = 100000;
     uint16 vrfRequestConfirmations = 3;
     uint32 vrfNumWords = 1;
+    mapping(uint => bool) vrfRequests; // requestId => isFulfilled
 
     //prettier-ignore
     uint8[] numbers = [
@@ -88,7 +90,24 @@ contract Bingo is VRFConsumerBaseV2 {
         buyTicket(_host);
     }
 
-    function requestRandomWords() external onlyHost {
+    function drawNumber() external onlyHost {
+        require(
+            game.gameStatus == GameStatus.RUNNING,
+            "The game is not running"
+        );
+        require(
+            game.totalNumbersDrawn < 75,
+            "All of the numbers have been drawn"
+        );
+        require(
+            vrfRequestId == 0 || vrfRequests[vrfRequestId],
+            "Previous VRF request has not been fullfilled yet"
+        );
+
+        requestRandomWords();
+    }
+
+    function requestRandomWords() private {
         vrfRequestId = COORDINATOR.requestRandomWords(
             vrfKeyHash,
             vrfSubscriptionId,
@@ -99,10 +118,27 @@ contract Bingo is VRFConsumerBaseV2 {
     }
 
     function fulfillRandomWords(
-        uint256 /* requestId */,
+        uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
-        vrfRandomWords = randomWords;
+        // Get random number between 0 and numbersLeft.length -1 inclusively
+        uint randomIndex = (randomWords[0] % game.numbersLeft.length);
+        uint8 number = game.numbersLeft[randomIndex];
+        // remove chosen number from numbersLeft
+        game.numbersLeft[randomIndex] = game.numbersLeft[
+            game.numbersLeft.length - 1
+        ];
+        game.numbersLeft.pop();
+
+        setNumberDrawn(number);
+        vrfRequests[requestId] = true;
+    }
+
+    function setNumberDrawn(uint8 _number) private {
+        numbersDrawn[_number] = true;
+        game.totalNumbersDrawn++;
+        game.hostLastActionTime = uint64(block.timestamp);
+        emit NumberDrawn(_number);
     }
 
     function getGame() public view returns (GameState memory) {
@@ -216,24 +252,6 @@ contract Bingo is VRFConsumerBaseV2 {
     modifier onlyHost() {
         require(msg.sender == host, "Only game host can call this function");
         _;
-    }
-
-    // TODO Implement chainlink VRF
-    function drawNumber(uint8 _number) public onlyHost {
-        require(_number > 0 && _number < 76, "Number must be between 1 and 75");
-        require(!numbersDrawn[_number], "Number has already been drawn");
-        require(
-            game.gameStatus == GameStatus.RUNNING,
-            "The game is not running"
-        );
-        require(
-            game.totalNumbersDrawn < 75,
-            "All of the numbers have been drawn"
-        );
-        game.totalNumbersDrawn++;
-        numbersDrawn[_number] = true;
-        game.hostLastActionTime = uint64(block.timestamp);
-        emit NumberDrawn(_number);
     }
 
     function getDrawnNumbers() public view returns (uint8[] memory) {
