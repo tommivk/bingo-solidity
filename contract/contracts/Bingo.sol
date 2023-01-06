@@ -50,12 +50,23 @@ contract Bingo is VRFConsumerBaseV2 {
     VRFCoordinatorV2Interface COORDINATOR;
     address vrfCoordinator;
     bytes32 vrfKeyHash;
-    uint256[] public vrfRandomWords;
     uint256 public vrfRequestId;
     uint64 public vrfSubscriptionId;
     uint32 vrfCallbackGasLimit = 100000;
     uint16 vrfRequestConfirmations = 3;
     uint32 vrfNumWords = 1;
+
+    //prettier-ignore
+    uint8[] numbers = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+        31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+        51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+        61, 62, 63, 64, 65, 66, 67, 68, 69, 70,
+        71, 72, 73, 74, 75
+    ];
 
     constructor(
         address _host,
@@ -73,6 +84,7 @@ contract Bingo is VRFConsumerBaseV2 {
         game.maxPlayers = _maxPlayers;
         game.bingoCallPeriod = 3 minutes;
         game.hostActionDeadline = 3 minutes;
+        game.numbersLeft = numbers;
         buyTicket(_host);
     }
 
@@ -225,15 +237,15 @@ contract Bingo is VRFConsumerBaseV2 {
     }
 
     function getDrawnNumbers() public view returns (uint8[] memory) {
-        uint8[] memory numbers = new uint8[](game.totalNumbersDrawn);
+        uint8[] memory nums = new uint8[](game.totalNumbersDrawn);
         uint index = 0;
         for (uint8 i = 1; i < 76; i++) {
             if (numbersDrawn[i]) {
-                numbers[index] = i;
+                nums[index] = i;
                 index++;
             }
         }
-        return numbers;
+        return nums;
     }
 
     function hostTimedOut() private view returns (bool) {
@@ -348,7 +360,7 @@ contract Bingo is VRFConsumerBaseV2 {
     }
 
     function generateCard() private view returns (uint8[25] memory) {
-        uint8[] memory nums = getNumbers();
+        uint8[] memory nums = numbers;
 
         // Randomize the array of numbers
         // Note This is pseudo-random
@@ -374,13 +386,5 @@ contract Bingo is VRFConsumerBaseV2 {
             card[i] = nums[i];
         }
         return card;
-    }
-
-    function getNumbers() public pure returns (uint8[] memory) {
-        uint8[] memory numbers = new uint8[](75);
-        for (uint8 i = 0; i < 75; i++) {
-            numbers[i] = i + 1;
-        }
-        return numbers;
     }
 }
