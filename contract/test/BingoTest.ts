@@ -27,10 +27,23 @@ describe("Bingo", function () {
   beforeEach(async () => {
     [accountA, accountB, accountC] = await ethers.getSigners();
 
+    const VRFCoordinator = await ethers.getContractFactory(
+      "MockVRFCoordinatorV2"
+    );
+    const vrfCoordinator = await VRFCoordinator.deploy();
+
     const contract = await ethers.getContractFactory("Bingo");
-    bingo = await contract.deploy(accountA.address, ticketCost, maxPlayers, {
-      value: ticketCost,
-    });
+    bingo = await contract.deploy(
+      accountA.address,
+      ticketCost,
+      maxPlayers,
+      vrfCoordinator.address,
+      0,
+      ethers.constants.HashZero,
+      {
+        value: ticketCost,
+      }
+    );
   });
 
   it("Constructor should set correct data", async () => {
@@ -39,13 +52,6 @@ describe("Bingo", function () {
 
     expect(host).to.equal(accountA.address);
     expect(cost).to.equal(ticketCost);
-  });
-
-  it("getNumbers should return numbers from 1 to 75", async () => {
-    const numbers = await bingo.getNumbers();
-    for (let i = 0; i < 75; i++) {
-      expect(numbers[i]).to.equal(i + 1);
-    }
   });
 
   it("buyTicket should set a new bingo card with 25 unique numbers between 1 and 75", async () => {
@@ -151,10 +157,23 @@ describe("Bingo", function () {
 
 describe("checkBingo tests", async () => {
   beforeEach(async () => {
+    const VRFCoordinator = await ethers.getContractFactory(
+      "MockVRFCoordinatorV2"
+    );
+    const vrfCoordinator = await VRFCoordinator.deploy();
+
     const Contract = await smock.mock<Bingo__factory>("Bingo");
-    bingo = await Contract.deploy(accountA.address, ticketCost, maxPlayers, {
-      value: ticketCost,
-    });
+    bingo = await Contract.deploy(
+      accountA.address,
+      ticketCost,
+      maxPlayers,
+      vrfCoordinator.address,
+      0,
+      ethers.constants.HashZero,
+      {
+        value: ticketCost,
+      }
+    );
 
     [accountA, accountB, accountC] = await ethers.getSigners();
 
@@ -238,10 +257,23 @@ describe("checkBingo tests", async () => {
 
 describe("Call Bingo tests", () => {
   beforeEach(async () => {
+    const VRFCoordinator = await ethers.getContractFactory(
+      "MockVRFCoordinatorV2"
+    );
+    const vrfCoordinator = await VRFCoordinator.deploy();
+
     const Contract = await smock.mock<Bingo__factory>("Bingo");
-    bingo = await Contract.deploy(accountA.address, ticketCost, maxPlayers, {
-      value: ticketCost,
-    });
+    bingo = await Contract.deploy(
+      accountA.address,
+      ticketCost,
+      maxPlayers,
+      vrfCoordinator.address,
+      0,
+      ethers.constants.HashZero,
+      {
+        value: ticketCost,
+      }
+    );
     [accountA, accountB, accountC] = await ethers.getSigners();
   });
 
@@ -351,10 +383,23 @@ describe("Withdraw tests", () => {
   let bingoCallPeriod: number;
 
   beforeEach(async () => {
+    const VRFCoordinator = await ethers.getContractFactory(
+      "MockVRFCoordinatorV2"
+    );
+    const vrfCoordinator = await VRFCoordinator.deploy();
+
     const Contract = await smock.mock<Bingo__factory>("Bingo");
-    bingo = await Contract.deploy(accountA.address, ticketCost, maxPlayers, {
-      value: ticketCost,
-    });
+    bingo = await Contract.deploy(
+      accountA.address,
+      ticketCost,
+      maxPlayers,
+      vrfCoordinator.address,
+      0,
+      ethers.constants.HashZero,
+      {
+        value: ticketCost,
+      }
+    );
     bingoCallPeriod = (await bingo.getGame()).bingoCallPeriod;
     [accountA, accountB, accountC] = await ethers.getSigners();
   });

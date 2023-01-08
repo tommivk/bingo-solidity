@@ -10,9 +10,19 @@ let accountB: SignerWithAddress;
 
 describe("BingoFactory tests", () => {
   beforeEach(async () => {
+    const VRFCoordinator = await ethers.getContractFactory(
+      "MockVRFCoordinatorV2"
+    );
+    const vrfCoordinator = await VRFCoordinator.deploy();
+
     const contract = await ethers.getContractFactory("BingoFactory");
     [accountA, accountB] = await ethers.getSigners();
-    bingoFactory = await contract.deploy(accountA.address);
+    bingoFactory = await contract.deploy(
+      accountA.address,
+      vrfCoordinator.address,
+      ethers.constants.AddressZero,
+      ethers.constants.HashZero
+    );
     contractAddress = bingoFactory.address;
   });
 
