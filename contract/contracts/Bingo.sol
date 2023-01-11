@@ -121,6 +121,7 @@ contract Bingo is VRFConsumerBaseV2 {
         uint256 requestId,
         uint256[] memory randomWords
     ) internal override {
+        require(game.gameStatus == GameStatus.RUNNING, "The game has ended");
         // Get random number between 0 and numbersLeft.length -1 inclusively
         uint randomIndex = (randomWords[0] % game.numbersLeft.length);
         uint8 number = game.numbersLeft[randomIndex];
