@@ -18,7 +18,7 @@ import { BingoContractData } from "../../types";
 import { toast } from "react-toastify";
 import PlayerActions from "../../components/PlayerActions";
 import GameInfoCard from "../../components/GameInfoCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const AddressZero = ethers.constants.AddressZero;
 
@@ -26,20 +26,26 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
   const [block, setBlock] = useState<Block>();
 
   const { address: account } = useAccount();
-
   const provider = useProvider();
-
-  const {} = useBlockNumber({
-    onBlock: async (blockNumber) => {
-      const block = await provider.getBlock(blockNumber);
-      setBlock(block);
-    },
-  });
 
   const contractData: BingoContractData = {
     address: contractAddress,
     abi: [...abi] as const,
   };
+
+  useEffect(() => {
+    const blockNumber = provider.getBlockNumber();
+    provider.getBlock(blockNumber).then((block) => setBlock(block));
+  }, [provider]);
+
+  useBlockNumber({
+    onBlock: async (blockNumber) => {
+      const block = await provider.getBlock(blockNumber);
+      if (block) {
+        setBlock(block);
+      }
+    },
+  });
 
   const { data: gameState, refetch: updateGameState } = useContractRead({
     ...contractData,
