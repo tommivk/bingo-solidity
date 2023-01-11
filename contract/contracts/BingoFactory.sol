@@ -4,8 +4,9 @@ pragma solidity ^0.8.9;
 import "./Bingo.sol";
 import "./VRFCoordinatorV2Interface.sol";
 import "./LinkTokenInterface.sol";
+import "./AutomationCompatible.sol";
 
-contract BingoFactory {
+contract BingoFactory is AutomationCompatible {
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
 
@@ -96,5 +97,32 @@ contract BingoFactory {
             amount,
             abi.encode(vrfSubscriptionId)
         );
+    }
+
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (bool upkeepNeeded, bytes memory /* performData */)
+    {
+        for (uint i = 0; i < contracts.length; i++) {
+            Bingo bingo = Bingo(contracts[i]);
+            if (bingo.canDrawNumber()) {
+                return (true, "");
+            }
+        }
+        return (false, "");
+    }
+
+    // NOTE This will eventually fail if there are too many games
+    function performUpkeep(bytes calldata /* performData */) external override {
+        for (uint i = 0; i < contracts.length; i++) {
+            Bingo bingo = Bingo(contracts[i]);
+            if (bingo.canDrawNumber()) {
+                bingo.drawNumber();
+            }
+        }
     }
 }
