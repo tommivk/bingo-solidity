@@ -56,7 +56,7 @@ contract Bingo is VRFConsumerBaseV2 {
     uint32 vrfCallbackGasLimit = 100000;
     uint16 vrfRequestConfirmations = 3;
     uint32 vrfNumWords = 1;
-    mapping(uint => bool) vrfRequests; // requestId => isFulfilled
+    mapping(uint => bool) public vrfRequests; // requestId => isFulfilled
 
     //prettier-ignore
     uint8[] numbers = [
