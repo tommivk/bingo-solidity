@@ -96,6 +96,12 @@ export default function Home() {
     setMaxPlayers(value);
   };
 
+  const { data: vrfId } = useContractRead({
+    ...contractData,
+    functionName: "vrfSubscriptionId",
+  });
+  console.log("VRF ID:", vrfId?.toString());
+
   return (
     <div>
       <Modal open={modalOpen} setModalOpen={setModalOpen}>
