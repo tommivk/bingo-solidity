@@ -124,7 +124,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     eventName: "GameStarted",
     listener() {
       updateGameState();
-      toast.info("The game started");
+      toast.info("The game has started");
     },
   });
 
