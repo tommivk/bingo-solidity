@@ -92,7 +92,7 @@ contract Bingo is VRFConsumerBaseV2 {
         buyTicket(_host);
     }
 
-    function drawNumber() external onlyHost {
+    function drawNumber() external {
         require(
             game.gameStatus == GameStatus.RUNNING,
             "The game is not running"
