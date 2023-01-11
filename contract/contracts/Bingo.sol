@@ -109,6 +109,13 @@ contract Bingo is VRFConsumerBaseV2 {
         requestRandomWords();
     }
 
+    function canDrawNumber() external view returns (bool) {
+        return
+            game.gameStatus == Bingo.GameStatus.RUNNING &&
+            game.numbersLeft.length > 0 &&
+            (vrfRequestId == 0 || vrfRequests[vrfRequestId]);
+    }
+
     function requestRandomWords() private {
         vrfRequestId = COORDINATOR.requestRandomWords(
             vrfKeyHash,
