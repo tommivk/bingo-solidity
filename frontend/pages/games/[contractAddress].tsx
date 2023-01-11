@@ -164,7 +164,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     },
   });
 
-  if (!gameState || !host) {
+  if (!gameState || !host || !block) {
     return "loading...";
   }
 
