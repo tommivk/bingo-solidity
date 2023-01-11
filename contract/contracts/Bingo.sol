@@ -47,6 +47,8 @@ contract Bingo is VRFConsumerBaseV2 {
     event HostChanged(address indexed _newHost);
     event PlayerLeft(address indexed _player);
     event GameStarted(uint64 _timeStarted);
+    event VRFRequested(uint indexed _vrfRequestId);
+    event VRFFulfilled(uint indexed _vrfRequestId);
 
     VRFCoordinatorV2Interface COORDINATOR;
     address vrfCoordinator;
@@ -115,6 +117,7 @@ contract Bingo is VRFConsumerBaseV2 {
             vrfCallbackGasLimit,
             vrfNumWords
         );
+        emit VRFRequested(vrfRequestId);
     }
 
     function fulfillRandomWords(
@@ -133,6 +136,7 @@ contract Bingo is VRFConsumerBaseV2 {
 
         setNumberDrawn(number);
         vrfRequests[requestId] = true;
+        emit VRFFulfilled(requestId);
     }
 
     function setNumberDrawn(uint8 _number) private {
