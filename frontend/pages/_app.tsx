@@ -12,8 +12,10 @@ import { ToastContainer } from "react-toastify";
 const PROJECT_ID = process.env.WALLETCONNECT_PROJECT_ID ?? "";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const chains = [chain.goerli, chain.hardhat];
-  const { provider } = configureChains(chains, [publicProvider()]);
+  const chains = [chain.polygonMumbai];
+  const { provider } = configureChains(chains, [publicProvider()], {
+    pollingInterval: 1000,
+  });
 
   const client = createClient({
     autoConnect: true,
