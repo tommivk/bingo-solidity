@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useContractWrite, usePrepareContractWrite } from "wagmi";
 import { BingoContractData, GameState } from "../types";
 import { GameStatus } from "../constants";
@@ -12,8 +11,6 @@ type Props = {
 };
 
 const HostActions = ({ contractData, gameState }: Props) => {
-  const [number, setNumber] = useState(1);
-
   const startGameEnabled = gameState.gameStatus === GameStatus.SETUP;
   const drawNumberEnabled = gameState.gameStatus === GameStatus.RUNNING;
 
@@ -24,14 +21,10 @@ const HostActions = ({ contractData, gameState }: Props) => {
       enabled: startGameEnabled,
     });
 
-  const { write: startGame } = useContractWrite({
+  const { write: startGame, isLoading: startGameLoading } = useContractWrite({
     ...startGameConfig,
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to start the game"));
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-      toast.success("Game successfully started");
     },
   });
 
@@ -39,11 +32,10 @@ const HostActions = ({ contractData, gameState }: Props) => {
     usePrepareContractWrite({
       ...contractData,
       functionName: "drawNumber",
-      args: [number],
       enabled: drawNumberEnabled,
     });
 
-  const { write: drawNumber } = useContractWrite({
+  const { write: drawNumber, isLoading: drawNumberLoading } = useContractWrite({
     ...drawNumberConfig,
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to draw number"));
@@ -67,16 +59,16 @@ const HostActions = ({ contractData, gameState }: Props) => {
   return (
     <div className="flex justify-center items-center mb-4">
       {startGameEnabled && (
-        <Button onClick={handleStartGame}>Start game</Button>
+        <Button onClick={handleStartGame} loading={startGameLoading}>
+          Start game
+        </Button>
       )}
 
       {drawNumberEnabled && (
         <>
-          <input
-            type="number"
-            onChange={({ target }) => setNumber(Number(target.value))}
-          />
-          <Button onClick={handleDrawNumber}>Draw number</Button>
+          <Button onClick={handleDrawNumber} loading={drawNumberLoading}>
+            Draw number
+          </Button>
         </>
       )}
     </div>
