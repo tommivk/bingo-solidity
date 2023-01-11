@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 // import "hardhat/console.sol";
 import "./VRFConsumerBaseV2.sol";
-import "./VRFCoordinatorV2Interface.sol";
+import "./interfaces/VRFCoordinatorV2Interface.sol";
 
 contract Bingo is VRFConsumerBaseV2 {
     enum GameStatus {

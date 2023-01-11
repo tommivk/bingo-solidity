@@ -2,8 +2,8 @@
 pragma solidity ^0.8.9;
 
 import "./Bingo.sol";
-import "./VRFCoordinatorV2Interface.sol";
-import "./LinkTokenInterface.sol";
+import "./interfaces/VRFCoordinatorV2Interface.sol";
+import "./interfaces/LinkTokenInterface.sol";
 import "./AutomationCompatible.sol";
 
 contract BingoFactory is AutomationCompatible {
