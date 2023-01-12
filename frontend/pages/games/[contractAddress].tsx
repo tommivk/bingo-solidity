@@ -185,7 +185,12 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       />
 
       <div className="flex justify-evenly">
-        {ticket && <BingoCard card={ticket.card} numbersDrawn={numbersDrawn} />}
+        <BingoCard
+          card={
+            ticket && ticket.valid ? ticket.card : Array.from("BINGO".repeat(5))
+          }
+          numbersDrawn={numbersDrawn}
+        />
         <GameInfoCard
           allBingoCards={allBingoCards}
           numbersDrawn={numbersDrawn}

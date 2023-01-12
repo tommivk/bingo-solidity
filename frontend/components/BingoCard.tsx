@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 type Props = {
-  card: readonly number[];
+  card: readonly (number | string)[];
   numbersDrawn: readonly number[];
   size?: "small" | "large";
 };
@@ -28,9 +28,9 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
         size === "large" ? "w-[400px] h-[400px] p-6" : "w-[200px] h-[200px] p-2"
       } box-content bg-slate-800 max-w-[100vw] grid grid-cols-5 gap-2 select-none`}
     >
-      {card.map((num: number, index) => (
+      {card.map((num: number | string, index) => (
         <div
-          key={num}
+          key={index}
           className={`${
             size === "large" ? "p-5" : "p-1"
           } bg-slate-700 text-slate-200 flex items-center justify-center ${
