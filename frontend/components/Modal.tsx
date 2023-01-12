@@ -23,6 +23,7 @@ const Modal = ({ open, setModalOpen, children }: Props) => {
     <div className="w-[100vw] h-[100vh] bg-black bg-opacity-60 absolute left-0 top-0 z-30 flex items-center justify-center">
       <div className="w-fit max-w-[90vw] h-fit px-10 py-4 max-h-full bg-slate-800 z-50 relative rounded-lg">
         <div
+          data-testid="modal-close-btn"
           className="absolute top-[-10px] right-[-10px] h-8 w-8 rounded-full bg-slate-600 flex justify-center items-center cursor-pointer hover:bg-slate-500"
           onClick={() => setModalOpen(false)}
         >
