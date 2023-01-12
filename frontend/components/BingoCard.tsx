@@ -24,6 +24,7 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
 
   return (
     <div
+      data-testid="bingo-card"
       className={`${
         size === "large" ? "w-[400px] h-[400px] p-6" : "w-[200px] h-[200px] p-2"
       } box-content bg-slate-800 max-w-[100vw] grid grid-cols-5 gap-2 select-none`}
