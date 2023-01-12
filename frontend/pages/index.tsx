@@ -104,6 +104,21 @@ export default function Home() {
 
   return (
     <div>
+      <Head>
+        <title>Bingo</title>
+        <meta name="description" content="Bingo" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <div className="m-4 flex justify-end items-center flex-wrap gap-2">
+        {address && <p className="mr-3">Connected address: {address}</p>}
+        <Web3Button />
+      </div>
+      <div className="flex flex-col justify-center items-center">
+        <Button className="mb-5" onClick={() => setModalOpen(true)}>
+          Create a New Game
+        </Button>
+        <RoomList rooms={rooms} />
+      </div>
       <Modal open={modalOpen} setModalOpen={setModalOpen}>
         <Modal.Header>Create a New Game</Modal.Header>
         <Modal.Content>
@@ -148,15 +163,6 @@ export default function Home() {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Head>
-        <title>Bingo</title>
-        <meta name="description" content="Bingo" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <Web3Button />
-      Connected address: {address}
-      <Button onClick={() => setModalOpen(true)}>Create a New Game</Button>
-      <RoomList rooms={rooms} />
     </div>
   );
 }
