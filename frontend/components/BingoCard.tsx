@@ -35,7 +35,7 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
           className={`${
             size === "large" ? "p-5" : "p-1"
           } bg-slate-700 text-slate-200 flex items-center justify-center ${
-            markedNumbers[index] || index == 12 ? "bg-red-500" : ""
+            markedNumbers[index] || index == 12 ? "bg-markedNumber" : ""
           }`}
         >
           {index == 12 ? (

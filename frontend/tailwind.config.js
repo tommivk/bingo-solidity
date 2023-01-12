@@ -8,6 +8,7 @@ module.exports = {
     extend: {
       colors: {
         darkSecondary: "#2c2d3382",
+        markedNumber: "#32993a"
       }
     },
   },

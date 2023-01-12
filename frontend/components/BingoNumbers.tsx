@@ -15,7 +15,7 @@ const BingoNumbers = ({ numbersDrawn }: Props) => {
             <div
               key={num}
               className={`${
-                numbersDrawn.includes(num) ? "bg-red-500" : "bg-slate-700"
+                numbersDrawn.includes(num) ? "bg-markedNumber" : "bg-slate-700"
               }  p-2 rounded-full flex justify-center items-center w-[35px] h-[35px]`}
             >
               {num}
