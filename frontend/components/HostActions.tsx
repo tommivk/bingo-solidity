@@ -4,6 +4,8 @@ import { GameStatus } from "../constants";
 import { toast } from "react-toastify";
 import { parseErrorMessage } from "../util";
 import Button from "./Button";
+import Modal from "./Modal";
+import { useState } from "react";
 
 type Props = {
   gameState: GameState;
@@ -11,6 +13,9 @@ type Props = {
 };
 
 const HostActions = ({ contractData, gameState }: Props) => {
+  const [modalOpen, setModalOpen] = useState(
+    gameState.gameStatus === GameStatus.SETUP
+  );
   const startGameEnabled = gameState.gameStatus === GameStatus.SETUP;
   const drawNumberEnabled = gameState.gameStatus === GameStatus.RUNNING;
 
@@ -58,6 +63,13 @@ const HostActions = ({ contractData, gameState }: Props) => {
 
   return (
     <div className="flex justify-center items-center mb-4">
+      <Modal open={modalOpen} closeButton={false}>
+        <Modal.Header>You are the game host</Modal.Header>
+        <Modal.Content>You can start the game when you like</Modal.Content>
+        <Modal.Footer>
+          <Button onClick={() => setModalOpen(false)}>Close</Button>
+        </Modal.Footer>
+      </Modal>
       {startGameEnabled && (
         <Button onClick={handleStartGame} loading={startGameLoading}>
           Start game
