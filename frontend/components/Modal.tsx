@@ -28,7 +28,7 @@ const Modal = ({ open, setModalOpen, children, closeButton = true }: Props) => {
   const footer = getElementByDisplayName("Footer");
 
   return (
-    <div className="w-[100vw] h-[100vh] bg-black bg-opacity-60 absolute left-0 top-0 z-30 flex items-center justify-center">
+    <div className="fixed w-[100vw] h-[100vh] bg-black bg-opacity-60 left-0 top-0 z-30 flex items-center justify-center">
       <div className="w-fit max-w-[90vw] h-fit px-10 py-4 max-h-full bg-slate-800 z-50 relative rounded-lg">
         {closeButton && (
           <div
