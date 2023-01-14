@@ -171,32 +171,34 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
   const isHost = !!account && account === host;
 
   return (
-    <div className="mb-28">
-      <Link href={"/"}>
-        <Button>All games</Button>
-      </Link>
-
-      <GameDetails
-        gameState={gameState}
-        host={host}
-        isHost={isHost}
-        contractData={contractData}
-        ticket={ticket}
-      />
-
-      <div className="flex justify-evenly">
-        <BingoCard
-          card={
-            ticket && ticket.valid ? ticket.card : Array.from("BINGO".repeat(5))
-          }
-          numbersDrawn={numbersDrawn}
+    <div className="h-[100vh] flex flex-col justify-between">
+      <div>
+        <Link href={"/"}>
+          <Button>All games</Button>
+        </Link>
+        <GameDetails
+          gameState={gameState}
+          host={host}
+          isHost={isHost}
+          contractData={contractData}
+          ticket={ticket}
         />
-        <GameInfoCard
-          allBingoCards={allBingoCards}
-          numbersDrawn={numbersDrawn}
-        />
+        <div className="flex justify-evenly">
+          <BingoCard
+            card={
+              ticket && ticket.valid
+                ? ticket.card
+                : Array.from("BINGO".repeat(5))
+            }
+            numbersDrawn={numbersDrawn}
+          />
+          <GameInfoCard
+            allBingoCards={allBingoCards}
+            numbersDrawn={numbersDrawn}
+          />
+        </div>
       </div>
-      <div className="fixed bottom-0 w-full">
+      <div>
         {isHost && (
           <HostActions gameState={gameState} contractData={contractData} />
         )}

@@ -13,6 +13,7 @@ import { parseErrorMessage } from "../util";
 import Button from "./Button";
 import { Block } from "@ethersproject/abstract-provider";
 import { useState } from "react";
+import Modal from "./Modal";
 
 type Props = {
   contractData: BingoContractData;
@@ -221,6 +222,21 @@ const PlayerActions = ({
 
   return (
     <div className="h-32 bg-darkSecondary w-full flex flex-col justify-center items-center">
+      <Modal open={callBingoEnabled} closeButton={false}>
+        <Modal.Header>You have a Bingo!</Modal.Header>
+        <Modal.Content>
+          <div className="px-5 py-6">
+            <Button
+              onClick={handleCallBingo}
+              disabled={!callBingoEnabled}
+              loading={callBingoLoading}
+            >
+              Call Bingo
+            </Button>
+          </div>
+        </Modal.Content>
+      </Modal>
+
       {ticket && gameState.gameStatus === GameStatus.BINGOFOUND && (
         <>
           {isWinner ? (
@@ -253,15 +269,6 @@ const PlayerActions = ({
       {leaveGameEnabled && (
         <Button onClick={handleLeaveGame} loading={leaveGameLoading}>
           Leave game
-        </Button>
-      )}
-      {callBingoEnabled && (
-        <Button
-          onClick={handleCallBingo}
-          disabled={!callBingoEnabled}
-          loading={callBingoLoading}
-        >
-          Call Bingo
         </Button>
       )}
 
