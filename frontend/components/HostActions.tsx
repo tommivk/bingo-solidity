@@ -71,7 +71,7 @@ const HostActions = ({ contractData, gameState }: Props) => {
         </Modal.Footer>
       </Modal>
       {startGameEnabled && (
-        <Button onClick={handleStartGame} loading={startGameLoading}>
+        <Button onClick={handleStartGame} loading={startGameLoading} size="lg">
           Start game
         </Button>
       )}

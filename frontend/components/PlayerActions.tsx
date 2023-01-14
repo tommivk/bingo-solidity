@@ -262,12 +262,16 @@ const PlayerActions = ({
       )}
 
       {joinGameEnabled && (
-        <Button onClick={handleJoinGame} loading={joinGameLoading}>
+        <Button onClick={handleJoinGame} loading={joinGameLoading} size="lg">
           Join game
         </Button>
       )}
       {leaveGameEnabled && (
-        <Button onClick={handleLeaveGame} loading={leaveGameLoading}>
+        <Button
+          onClick={handleLeaveGame}
+          loading={leaveGameLoading}
+          className="mr-auto ml-10"
+        >
           Leave game
         </Button>
       )}
