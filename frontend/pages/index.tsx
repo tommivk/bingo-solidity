@@ -25,8 +25,10 @@ export default function Home() {
   const { address } = useAccount();
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [ticketCost, setTicketCost] = useState("");
+  const [ticketCost, setTicketCost] = useState("0");
   const [maxPlayers, setMaxPlayers] = useState("5");
+  const [maxPlayersError, setMaxPlayersError] = useState("");
+  const [ticketCostError, setTicketCostError] = useState("");
 
   const contractData: BingoFactoryContractData = {
     address: BINGO_FACTORY_ADDRESS,
@@ -46,8 +48,11 @@ export default function Home() {
       ticketCost && maxPlayers
         ? [ethers.utils.parseUnits(ticketCost, "ether"), Number(maxPlayers)]
         : undefined,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to create game"));
+    onError({ message, stack }) {
+      toast.error(
+        parseErrorMessage(stack) ??
+          parseErrorMessage(message, "Failed to create game")
+      );
     },
     onSuccess() {
       setModalOpen(false);
@@ -72,6 +77,13 @@ export default function Home() {
   });
 
   const handleCreateGame = () => {
+    if (!ticketCost) {
+      return setTicketCostError("Ticket cost is required");
+    }
+    if (!maxPlayers) {
+      return setMaxPlayersError("Max players is required");
+    }
+
     try {
       createRoom?.();
     } catch (_error) {
@@ -81,19 +93,20 @@ export default function Home() {
 
   const handleTicketCostChange = (event: any) => {
     const value = event.target.value;
-    if (isNaN(value)) {
-      return toast.error("Invalid number");
-    }
     setTicketCost(value);
+    if (value < 0) {
+      return setTicketCostError("Value must be positive");
+    }
+    setTicketCostError("");
   };
 
   const handleMaxPlayersChange = (event: any) => {
     const value = event.target.value;
-
-    if (isNaN(value)) {
-      return toast.error("Invalid number");
-    }
     setMaxPlayers(value);
+    if (value && (value < 1 || value > 255)) {
+      return setMaxPlayersError("Value must be between 1 and 255");
+    }
+    setMaxPlayersError("");
   };
 
   const { data: vrfId } = useContractRead({
@@ -132,8 +145,16 @@ export default function Home() {
                   <Input
                     type="number"
                     value={ticketCost}
+                    min={0}
+                    step={0.000001}
                     onChange={handleTicketCostChange}
+                    allowNegative={false}
                   />
+                  {ticketCostError && (
+                    <p className="text-red-500 text-center pt-1 text-sm">
+                      {ticketCostError}
+                    </p>
+                  )}
                 </td>
                 <td className="font-semibold pl-2">ETH</td>
               </tr>
@@ -144,10 +165,20 @@ export default function Home() {
               <tr>
                 <td>
                   <Input
+                    className="w-full"
                     type="number"
                     value={maxPlayers}
+                    min={1}
+                    max={255}
                     onChange={handleMaxPlayersChange}
+                    allowNegative={false}
+                    allowDecimals={false}
                   />
+                  {maxPlayersError && (
+                    <p className="text-red-500 text-center pt-1 text-sm">
+                      {maxPlayersError}
+                    </p>
+                  )}
                 </td>
               </tr>
             </tbody>
@@ -157,7 +188,7 @@ export default function Home() {
           <Button
             onClick={handleCreateGame}
             loading={createRoomLoading}
-            disabled={!ticketCost || !maxPlayers}
+            disabled={!!ticketCostError || !!maxPlayersError}
           >
             Create game
           </Button>
