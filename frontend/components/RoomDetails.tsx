@@ -20,6 +20,12 @@ const RoomDetails = ({ contractAddress }: Props) => {
     functionName: "getGame",
   });
 
+  const parseGameStatus = (status: number) => {
+    if (status === 0) return "Lobby";
+    if (status === 1) return "Running";
+    if (status === 2) return "Finished";
+  };
+
   return (
     <Link href={`/games/${contractAddress}`}>
       <div className="p-5 text-slate-400 min-h-[80px] w-[500px] max-w-[90vw] bg-darkSecondary rounded-lg cursor-pointer hover:scale-[1.03] delay-100">
@@ -35,7 +41,7 @@ const RoomDetails = ({ contractAddress }: Props) => {
             <p>
               Players joined: {data.playersJoined} / {data.maxPlayers}
             </p>
-            <p>Game status: {data.gameStatus}</p>
+            <p>Game status: {parseGameStatus(data.gameStatus)}</p>
             <p>
               Ticket cost:{" "}
               {data.ticketCost && ethers.utils.formatEther(data.ticketCost)} ETH
