@@ -2,7 +2,7 @@ import React from "react";
 
 type Props =
   | {
-      closeButton: true;
+      closeButton?: true;
       setModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
       open: boolean;
       children: React.ReactNode;
