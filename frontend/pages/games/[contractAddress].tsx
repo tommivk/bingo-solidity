@@ -134,6 +134,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     listener(number) {
       updateDrawnNumbers();
       updateIsBingo();
+      updateGameState();
       toast.info(`New number drawn: ${number}`);
     },
   });
