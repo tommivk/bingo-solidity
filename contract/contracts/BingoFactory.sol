@@ -105,21 +105,36 @@ contract BingoFactory is AutomationCompatible {
         external
         view
         override
-        returns (bool upkeepNeeded, bytes memory /* performData */)
+        returns (bool upkeepNeeded, bytes memory performData)
     {
+        uint[] memory runningGames = new uint[](contracts.length);
+        uint totalRunning = 0;
+
         for (uint i = 0; i < contracts.length; i++) {
             Bingo bingo = Bingo(contracts[i]);
             if (bingo.canDrawNumber()) {
-                return (true, "");
+                runningGames[totalRunning] = i;
+                totalRunning++;
             }
         }
-        return (false, "");
+
+        if (totalRunning > 0) {
+            upkeepNeeded = true;
+            performData = abi.encode(runningGames, totalRunning);
+        } else {
+            upkeepNeeded = false;
+        }
     }
 
-    // NOTE This will eventually fail if there are too many games
-    function performUpkeep(bytes calldata /* performData */) external override {
-        for (uint i = 0; i < contracts.length; i++) {
-            Bingo bingo = Bingo(contracts[i]);
+    // NOTE This will fail if there are too many games running
+    function performUpkeep(bytes calldata performData) external override {
+        (uint[] memory runningGames, uint totalRunning) = abi.decode(
+            performData,
+            (uint[], uint)
+        );
+
+        for (uint i = 0; i < totalRunning; i++) {
+            Bingo bingo = Bingo(contracts[runningGames[i]]);
             if (bingo.canDrawNumber()) {
                 bingo.drawNumber();
             }
