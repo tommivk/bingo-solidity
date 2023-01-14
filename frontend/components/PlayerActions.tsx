@@ -1,12 +1,18 @@
 import { ethers } from "ethers";
 import { toast } from "react-toastify";
-import { usePrepareContractWrite, Address, useContractWrite } from "wagmi";
+import {
+  usePrepareContractWrite,
+  Address,
+  useContractWrite,
+  useContractEvent,
+} from "wagmi";
 import { GameStatus } from "../constants";
 import useCountdown from "../hooks/useCountdown";
 import { BingoContractData, GameState, Ticket } from "../types";
 import { parseErrorMessage } from "../util";
 import Button from "./Button";
 import { Block } from "@ethersproject/abstract-provider";
+import { useState } from "react";
 
 type Props = {
   contractData: BingoContractData;
@@ -33,6 +39,16 @@ const PlayerActions = ({
   isWinner,
   block,
 }: Props) => {
+  const [vrfRequest, setVrfRequest] = useState<{
+    requested: boolean;
+    fulfilled: boolean;
+    requestId?: ethers.BigNumber;
+  }>({
+    requested: false,
+    fulfilled: false,
+    requestId: undefined,
+  });
+
   const leaveGameEnabled =
     gameState &&
     !!ticket &&
@@ -169,6 +185,32 @@ const PlayerActions = ({
       },
     });
 
+  useContractEvent({
+    ...contractData,
+    eventName: "VRFRequested",
+    listener(vrfRequestId) {
+      if (vrfRequest.requestId && !vrfRequest.fulfilled) {
+        toast.error("Out of sync, pls refresh");
+      }
+      setVrfRequest({
+        requestId: vrfRequestId,
+        fulfilled: false,
+        requested: true,
+      });
+    },
+  });
+
+  useContractEvent({
+    ...contractData,
+    eventName: "VRFFulfilled",
+    listener(vrfRequestId) {
+      if (vrfRequest.requestId && !vrfRequest.requestId.eq(vrfRequestId)) {
+        toast.error("Out of sync, pls refresh");
+      }
+      setVrfRequest({ ...vrfRequest, fulfilled: true, requested: false });
+    },
+  });
+
   const handleWithdrawWinnings = async () => {
     await refetchPrepareWithdrawWinnings();
     if (prepareWithdrawWinningsError) {
@@ -222,6 +264,18 @@ const PlayerActions = ({
           Call Bingo
         </Button>
       )}
+
+      {gameState.gameStatus == GameStatus.RUNNING &&
+        gameState.totalNumbersDrawn < 75 && (
+          <>
+            {!vrfRequest.requested && (
+              <p>Waiting for the next number to be drawn ...</p>
+            )}
+            {vrfRequest.requested && (
+              <p>Waiting for the number to be confirmed ...</p>
+            )}
+          </>
+        )}
     </div>
   );
 };
