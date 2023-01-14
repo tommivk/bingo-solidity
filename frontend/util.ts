@@ -19,6 +19,7 @@ const errorMessages = [
   "The game is full",
   "Insufficient amount sent",
   "This address already owns a ticket",
+  "Insufficient funds",
 ];
 
 export const parseErrorMessage = (
