@@ -23,10 +23,8 @@ contract Bingo is VRFConsumerBaseV2 {
         uint8 maxPlayers;
         uint8 playersJoined;
         uint8 totalNumbersDrawn;
-        uint8 hostActionDeadline;
         uint8 bingoCallPeriod;
         uint8 winnerCount;
-        uint64 hostLastActionTime;
         uint64 bingoFoundTime;
         GameStatus gameStatus;
         address[] joinedPlayers;
@@ -87,7 +85,6 @@ contract Bingo is VRFConsumerBaseV2 {
         game.ticketCost = _ticketCost;
         game.maxPlayers = _maxPlayers;
         game.bingoCallPeriod = 3 minutes;
-        game.hostActionDeadline = 3 minutes;
         game.numbersLeft = numbers;
         buyTicket(_host);
     }
@@ -149,7 +146,6 @@ contract Bingo is VRFConsumerBaseV2 {
     function setNumberDrawn(uint8 _number) private {
         numbersDrawn[_number] = true;
         game.totalNumbersDrawn++;
-        game.hostLastActionTime = uint64(block.timestamp);
         emit NumberDrawn(_number);
     }
 
@@ -278,26 +274,9 @@ contract Bingo is VRFConsumerBaseV2 {
         return nums;
     }
 
-    function hostTimedOut() private view returns (bool) {
-        if (
-            game.gameStatus == GameStatus.RUNNING &&
-            block.timestamp >
-            (game.hostLastActionTime + game.hostActionDeadline)
-        ) {
-            return true;
-        }
-        return false;
-    }
-
     function claimHost() public {
-        bool timedOut = hostTimedOut();
-        require(host == address(0) || timedOut);
+        require(host == address(0));
         require(addressToTicket[msg.sender].valid, "You are not a player");
-        if (timedOut) {
-            Ticket storage ticket = addressToTicket[host];
-            delete ticket.valid;
-            delete ticket.card;
-        }
         host = msg.sender;
         emit HostChanged(msg.sender);
     }
@@ -341,8 +320,7 @@ contract Bingo is VRFConsumerBaseV2 {
             "The game has already started"
         );
         game.gameStatus = GameStatus.RUNNING;
-        game.hostLastActionTime = uint64(block.timestamp);
-        emit GameStarted(game.hostLastActionTime);
+        emit GameStarted(uint64(block.timestamp));
     }
 
     function buyTicket(address _to) public payable {
