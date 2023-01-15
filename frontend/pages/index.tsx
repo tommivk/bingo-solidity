@@ -16,14 +16,14 @@ import Router from "next/router";
 import RoomList from "../components/RoomList";
 import Modal from "../components/Modal";
 import { useState } from "react";
+import { useBalance } from "wagmi";
 import Input from "../components/Input";
+import Dropdown from "../components/Dropdown";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
 
 export default function Home() {
-  const { address } = useAccount();
-
   const [modalOpen, setModalOpen] = useState(false);
   const [ticketCost, setTicketCost] = useState("0");
   const [maxPlayers, setMaxPlayers] = useState("5");
@@ -34,6 +34,11 @@ export default function Home() {
     address: BINGO_FACTORY_ADDRESS,
     abi: [...BingoFactoryAbi] as const,
   };
+
+  const { address } = useAccount();
+  const { data: balance } = useBalance({
+    address: address,
+  });
 
   const { write: createRoom, isLoading: createRoomLoading } = useContractWrite({
     ...contractData,
@@ -123,8 +128,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div className="m-4 flex justify-end items-center flex-wrap gap-2">
-        {address && <p className="mr-3">Connected address: {address}</p>}
-        <Web3Button />
+        {address && balance ? (
+          <Dropdown address={address} balance={balance} />
+        ) : (
+          <Web3Button />
+        )}
       </div>
       <div className="flex flex-col justify-center items-center">
         <Button className="mb-5" onClick={() => setModalOpen(true)}>
