@@ -261,17 +261,7 @@ export const abi = [
       },
       {
         "internalType": "uint8",
-        "name": "playersJoined",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint8",
         "name": "totalNumbersDrawn",
-        "type": "uint8"
-      },
-      {
-        "internalType": "uint8",
-        "name": "hostActionDeadline",
         "type": "uint8"
       },
       {
@@ -283,11 +273,6 @@ export const abi = [
         "internalType": "uint8",
         "name": "winnerCount",
         "type": "uint8"
-      },
-      {
-        "internalType": "uint64",
-        "name": "hostLastActionTime",
-        "type": "uint64"
       },
       {
         "internalType": "uint64",
@@ -347,17 +332,7 @@ export const abi = [
           },
           {
             "internalType": "uint8",
-            "name": "playersJoined",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
             "name": "totalNumbersDrawn",
-            "type": "uint8"
-          },
-          {
-            "internalType": "uint8",
-            "name": "hostActionDeadline",
             "type": "uint8"
           },
           {
@@ -369,11 +344,6 @@ export const abi = [
             "internalType": "uint8",
             "name": "winnerCount",
             "type": "uint8"
-          },
-          {
-            "internalType": "uint64",
-            "name": "hostLastActionTime",
-            "type": "uint64"
           },
           {
             "internalType": "uint64",
