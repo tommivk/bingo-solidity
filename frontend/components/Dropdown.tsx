@@ -99,8 +99,11 @@ const Dropdown = ({
 
       {open && (
         <div className="z-50 w-80 min-w-fit min-h-fit p-4 bg-[#161616] rounded-md absolute top-12 right-0 border-gray-700 border-2">
-          <div className="flex justify-center">
-            <p className="cursor-pointer group" onClick={copyAddress}>
+          <div className="flex justify-center items-center">
+            <p
+              className="cursor-pointer group flex items-center"
+              onClick={copyAddress}
+            >
               {address.substring(0, 8)}...
               {address.substring(address.length - 6, address.length)}
               <CopyIcon className="h-5 w-5 inline-block ml-2 fill-slate-200 group-hover:fill-gray-400" />
@@ -111,7 +114,7 @@ const Dropdown = ({
               target="_blank"
               className="ml-2 group"
             >
-              <LinkIcon className="h-5 w-5 inline-block fill-slate-200 group-hover:fill-gray-400" />
+              <LinkIcon className="h-5 w-5 fill-slate-200 group-hover:fill-gray-400" />
             </a>
           </div>
 
