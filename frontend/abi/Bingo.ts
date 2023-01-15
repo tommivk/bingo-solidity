@@ -412,6 +412,19 @@ export const abi = [
   },
   {
     "inputs": [],
+    "name": "getWinners",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "host",
     "outputs": [
       {
