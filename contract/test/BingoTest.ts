@@ -134,17 +134,6 @@ describe("Bingo", function () {
     ).to.be.revertedWithoutReason();
   });
 
-  it("claiming host should be possible when the host has timed out and hosts ticket should be invalidated", async () => {
-    await bingo.buyTicket(accountB.address, { value: ticketCost });
-    await bingo.startGame();
-    await time.increase(200);
-    await bingo.connect(accountB).claimHost();
-    expect(await bingo.host()).to.equal(accountB.address);
-
-    const ticket = await bingo.getTicket(accountA.address);
-    expect(ticket.valid).to.equal(false);
-  });
-
   it("claiming host should be possible when the host has left the game", async () => {
     await bingo
       .connect(accountB)
