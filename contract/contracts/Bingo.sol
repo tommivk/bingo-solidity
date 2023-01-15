@@ -183,6 +183,18 @@ contract Bingo is VRFConsumerBaseV2 {
         emit BingoFound(msg.sender);
     }
 
+    function getWinners() public view returns (address[] memory) {
+        address[] memory result = new address[](game.winnerCount);
+        uint index = 0;
+        for (uint i = 0; i < game.joinedPlayers.length; i++) {
+            if (winners[game.joinedPlayers[i]]) {
+                result[index] = game.joinedPlayers[i];
+                index++;
+            }
+        }
+        return result;
+    }
+
     bool lock = false;
 
     function withdrawWinnings() public payable {
