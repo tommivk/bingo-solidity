@@ -39,7 +39,7 @@ const RoomDetails = ({ contractAddress }: Props) => {
         ) : (
           <>
             <p>
-              Players joined: {data.playersJoined} / {data.maxPlayers}
+              Players joined: {data.joinedPlayers.length} / {data.maxPlayers}
             </p>
             <p>Game status: {parseGameStatus(data.gameStatus)}</p>
             <p>

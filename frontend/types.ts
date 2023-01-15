@@ -7,12 +7,9 @@ import { abi as BingoFactoryAbi } from "./abi/BingoFactory";
 export type GameState = {
   ticketCost: BigNumber;
   maxPlayers: number;
-  playersJoined: number;
   totalNumbersDrawn: number;
-  hostActionDeadline: number;
   bingoCallPeriod: number;
   winnerCount: number;
-  hostLastActionTime: BigNumber;
   bingoFoundTime: BigNumber;
   gameStatus: number;
   joinedPlayers: readonly Address[];
