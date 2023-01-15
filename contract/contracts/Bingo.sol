@@ -21,7 +21,6 @@ contract Bingo is VRFConsumerBaseV2 {
     struct GameState {
         uint ticketCost;
         uint8 maxPlayers;
-        uint8 playersJoined;
         uint8 totalNumbersDrawn;
         uint8 bingoCallPeriod;
         uint8 winnerCount;
@@ -204,7 +203,8 @@ contract Bingo is VRFConsumerBaseV2 {
         require(!ticket.paidOut, "You have already withdrawed");
 
         (bool success, ) = payable(msg.sender).call{
-            value: (game.ticketCost * game.playersJoined) / game.winnerCount
+            value: (game.ticketCost * game.joinedPlayers.length) /
+                game.winnerCount
         }("");
         require(success, "Failed to withdraw");
 
@@ -310,7 +310,6 @@ contract Bingo is VRFConsumerBaseV2 {
         game.joinedPlayers.pop();
 
         payable(msg.sender).transfer(game.ticketCost);
-        game.playersJoined--;
         emit PlayerLeft(msg.sender);
     }
 
@@ -328,7 +327,10 @@ contract Bingo is VRFConsumerBaseV2 {
             game.gameStatus == GameStatus.SETUP,
             "The game has already started"
         );
-        require(game.playersJoined < game.maxPlayers, "The game is full");
+        require(
+            game.joinedPlayers.length < game.maxPlayers,
+            "The game is full"
+        );
         require(msg.value >= game.ticketCost, "Insufficient amount sent");
         require(
             addressToTicket[_to].card[0] == 0,
@@ -343,8 +345,6 @@ contract Bingo is VRFConsumerBaseV2 {
 
         addressToTicket[_to] = ticket;
         game.joinedPlayers.push(_to);
-
-        game.playersJoined++;
 
         emit TicketBought(_to);
     }
