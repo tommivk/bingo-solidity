@@ -503,4 +503,37 @@ describe("Withdraw tests", () => {
       "You have already withdrawed"
     );
   });
+
+  it("getWinners should return correct data", async () => {
+    await bingo
+      .connect(accountB)
+      .buyTicket(accountB.address, { value: ticketCost });
+    await bingo
+      .connect(accountC)
+      .buyTicket(accountC.address, { value: ticketCost });
+
+    await bingo.startGame();
+    await setAllNumbersDrawn();
+
+    let winners = await bingo.getWinners();
+    expect(winners.length).to.equal(0);
+
+    await bingo.connect(accountA).callBingo();
+    winners = await bingo.getWinners();
+    expect(winners.length).to.equal(1);
+    expect(winners).to.contain(accountA.address);
+
+    await bingo.connect(accountB).callBingo();
+    winners = await bingo.getWinners();
+    expect(winners.length).to.equal(2);
+    expect(winners).to.contain(accountA.address);
+    expect(winners).to.contain(accountB.address);
+
+    await bingo.connect(accountC).callBingo();
+    winners = await bingo.getWinners();
+    expect(winners.length).to.equal(3);
+    expect(winners).to.contain(accountA.address);
+    expect(winners).to.contain(accountB.address);
+    expect(winners).to.contain(accountC.address);
+  });
 });
