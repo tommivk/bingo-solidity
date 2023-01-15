@@ -237,9 +237,9 @@ const PlayerActions = ({
         </Modal.Content>
       </Modal>
 
-      {ticket && gameState.gameStatus === GameStatus.BINGOFOUND && (
+      {gameState.gameStatus === GameStatus.BINGOFOUND && (
         <>
-          {isWinner ? (
+          {ticket && isWinner ? (
             <>
               <h1 className="mb-4">You Are a Winner!</h1>
               {!ticket.paidOut && timeLeftToCallBingo > 0 && (
