@@ -172,10 +172,10 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
   const isHost = !!account && account === host;
 
   return (
-    <div className="h-[100vh] flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col justify-between relative">
       <div>
         <Link href={"/"}>
-          <Button>All games</Button>
+          <Button className="mt-4 ml-4">All games</Button>
         </Link>
         <GameDetails
           gameState={gameState}
@@ -184,7 +184,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
           contractData={contractData}
           ticket={ticket}
         />
-        <div className="flex justify-evenly">
+        <div className="flex justify-evenly flex-wrap gap-4 mt-10">
           <BingoCard
             card={
               ticket && ticket.valid

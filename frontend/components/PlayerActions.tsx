@@ -270,7 +270,7 @@ const PlayerActions = ({
         <Button
           onClick={handleLeaveGame}
           loading={leaveGameLoading}
-          className="mr-auto ml-10"
+          className="sm:mr-auto sm:ml-10"
         >
           Leave game
         </Button>

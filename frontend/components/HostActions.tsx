@@ -71,9 +71,15 @@ const HostActions = ({ contractData, gameState }: Props) => {
         </Modal.Footer>
       </Modal>
       {startGameEnabled && (
-        <Button onClick={handleStartGame} loading={startGameLoading} size="lg">
-          Start game
-        </Button>
+        <div className="sm:absolute bottom-6 mt-4">
+          <Button
+            onClick={handleStartGame}
+            loading={startGameLoading}
+            size="lg"
+          >
+            Start Game
+          </Button>
+        </div>
       )}
 
       {drawNumberEnabled && (

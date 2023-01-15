@@ -48,19 +48,19 @@ const GameDetails = ({
   };
 
   return (
-    <div>
+    <div className="p-4 text-slate-300">
+      <p>
+        Game address: <span className="break-all">{contractData.address}</span>
+      </p>
+      Host: <span className="break-all">{host}</span> {isHost && "(You)"}
+      {claimHostEnabled && (
+        <Button onClick={handleClaimHost} loading={claimHostLoading}>
+          Claim host
+        </Button>
+      )}
       <div>
-        <p>Game address {contractData.address}</p>
-        Host: {host} {isHost && "(You)"}
-        {claimHostEnabled && (
-          <Button onClick={handleClaimHost} loading={claimHostLoading}>
-            Claim host
-          </Button>
-        )}
+        Players joined: {playersJoined} / {maxPlayers}
       </div>
-      <div>Players joined: {playersJoined}</div>
-      <div>Max Players: {maxPlayers}</div>
-      <div>GameStatus: {gameStatus}</div>
     </div>
   );
 };
