@@ -3,7 +3,6 @@ import {
   useContractRead,
   useAccount,
   useContractEvent,
-  useBlockNumber,
   useProvider,
   useNetwork,
 } from "wagmi";
@@ -14,42 +13,30 @@ import GameDetails from "../../components/GameDetails";
 import Button from "../../components/Button";
 import HostActions from "../../components/HostActions";
 import { ethers } from "ethers";
-import { Block } from "@ethersproject/abstract-provider";
 import { BingoContractData } from "../../types";
 import { toast } from "react-toastify";
 import PlayerActions from "../../components/PlayerActions";
 import GameInfoCard from "../../components/GameInfoCard";
-import { useEffect, useState } from "react";
 import WrongNetworkError from "../../components/WrongNetworkError";
+import useBlock from "../../hooks/useBlock";
 
 const AddressZero = ethers.constants.AddressZero;
 const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 const Game = ({ contractAddress }: { contractAddress: string }) => {
-  const [block, setBlock] = useState<Block>();
-
   const { address: account } = useAccount();
   const provider = useProvider();
+  const {
+    data: block,
+    isLoading: blockLoading,
+    error: blockError,
+  } = useBlock(provider);
   const { chain } = useNetwork();
 
   const contractData: BingoContractData = {
     address: contractAddress,
     abi: [...abi] as const,
   };
-
-  useEffect(() => {
-    const blockNumber = provider.getBlockNumber();
-    provider.getBlock(blockNumber).then((block) => setBlock(block));
-  }, [provider]);
-
-  useBlockNumber({
-    onBlock: async (blockNumber) => {
-      const block = await provider.getBlock(blockNumber);
-      if (block) {
-        setBlock(block);
-      }
-    },
-  });
 
   const { data: gameState, refetch: updateGameState } = useContractRead({
     ...contractData,
