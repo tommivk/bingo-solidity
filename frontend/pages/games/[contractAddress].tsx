@@ -93,6 +93,11 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     enabled: !!ticket,
   });
 
+  const { data: winners = [], refetch: updateWinners } = useContractRead({
+    ...contractData,
+    functionName: "getWinners",
+  });
+
   useContractEvent({
     ...contractData,
     eventName: "PlayerLeft",
@@ -162,6 +167,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       }
       updateGameState();
       updateIsWinner();
+      updateWinners();
     },
   });
 
@@ -196,6 +202,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
           <GameInfoCard
             allBingoCards={allBingoCards}
             numbersDrawn={numbersDrawn}
+            winners={winners}
           />
         </div>
       </div>
