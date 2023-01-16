@@ -9,7 +9,7 @@ import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { ToastContainer } from "react-toastify";
 
-const PROJECT_ID = process.env.WALLETCONNECT_PROJECT_ID ?? "";
+const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "";
 
 export default function App({ Component, pageProps }: AppProps) {
   const chains = [chain.polygonMumbai];
