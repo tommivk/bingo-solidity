@@ -142,11 +142,14 @@ export default function Home() {
         )}
       </div>
       <div className="flex flex-col justify-center items-center">
-        <Button className="mb-5" onClick={() => setModalOpen(true)}>
-          Create a New Game
-        </Button>
+        {address && (
+          <Button className="mb-5" onClick={() => setModalOpen(true)}>
+            Create a New Game
+          </Button>
+        )}
         <RoomList rooms={rooms} />
       </div>
+
       <Modal open={modalOpen} setModalOpen={setModalOpen}>
         <Modal.Header>Create a New Game</Modal.Header>
         <Modal.Content>
