@@ -19,6 +19,7 @@ import PlayerActions from "../../components/PlayerActions";
 import GameInfoCard from "../../components/GameInfoCard";
 import WrongNetworkError from "../../components/WrongNetworkError";
 import useBlock from "../../hooks/useBlock";
+import ErrorPage from "../../components/ErrorPage";
 
 const AddressZero = ethers.constants.AddressZero;
 const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
@@ -38,17 +39,32 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     abi: [...abi] as const,
   };
 
-  const { data: gameState, refetch: updateGameState } = useContractRead({
+  const {
+    data: gameState,
+    refetch: updateGameState,
+    error: gameStateError,
+    isLoading: gameStateLoading,
+  } = useContractRead({
     ...contractData,
     functionName: "getGame",
   });
 
-  const { data: host, refetch: updateHost } = useContractRead({
+  const {
+    data: host,
+    refetch: updateHost,
+    error: hostError,
+    isLoading: hostLoading,
+  } = useContractRead({
     ...contractData,
     functionName: "host",
   });
 
-  const { data: ticket, refetch: updateTicket } = useContractRead({
+  const {
+    data: ticket,
+    refetch: updateTicket,
+    isLoading: ticketLoading,
+    error: ticketError,
+  } = useContractRead({
     ...contractData,
     functionName: "getTicket",
     overrides: {
@@ -58,33 +74,56 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     enabled: !!account,
   });
 
-  const { data: allBingoCards = [], refetch: updateAllBingoCards } =
-    useContractRead({
-      ...contractData,
-      functionName: "getBingoCards",
-    });
+  const {
+    data: allBingoCards = [],
+    refetch: updateAllBingoCards,
+    isLoading: allBingoCardsLoading,
+    error: allBingoCardsError,
+  } = useContractRead({
+    ...contractData,
+    functionName: "getBingoCards",
+  });
 
-  const { data: numbersDrawn = [], refetch: updateDrawnNumbers } =
-    useContractRead({
-      ...contractData,
-      functionName: "getDrawnNumbers",
-    });
+  const {
+    data: numbersDrawn = [],
+    refetch: updateDrawnNumbers,
+    isLoading: numbersDrawnLoading,
+    error: numbersDrawnError,
+  } = useContractRead({
+    ...contractData,
+    functionName: "getDrawnNumbers",
+  });
 
-  const { data: isWinner = false, refetch: updateIsWinner } = useContractRead({
+  const {
+    data: isWinner = false,
+    refetch: updateIsWinner,
+    isLoading: isWinnerLoading,
+    error: isWinnerError,
+  } = useContractRead({
     ...contractData,
     functionName: "winners",
     args: account && [account],
     enabled: !!account,
   });
 
-  const { data: isBingo = false, refetch: updateIsBingo } = useContractRead({
+  const {
+    data: isBingo = false,
+    refetch: updateIsBingo,
+    isLoading: isBingoLoading,
+    error: isBingoError,
+  } = useContractRead({
     ...contractData,
     functionName: "checkBingo",
     args: ticket && [ticket.card],
     enabled: !!ticket,
   });
 
-  const { data: winners = [], refetch: updateWinners } = useContractRead({
+  const {
+    data: winners = [],
+    refetch: updateWinners,
+    isLoading: winnersLoading,
+    error: winnersError,
+  } = useContractRead({
     ...contractData,
     functionName: "getWinners",
   });
@@ -162,8 +201,41 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     },
   });
 
+  if (
+    gameStateError ||
+    hostError ||
+    ticketError ||
+    allBingoCardsError ||
+    numbersDrawnError ||
+    isWinnerError ||
+    isBingoError ||
+    winnersError ||
+    blockError
+  ) {
+    return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
+  }
+
+  if (
+    gameStateLoading ||
+    hostLoading ||
+    blockLoading ||
+    ticketLoading ||
+    allBingoCardsLoading ||
+    numbersDrawnLoading ||
+    isWinnerLoading ||
+    isBingoLoading ||
+    winnersLoading ||
+    blockLoading
+  ) {
+    return (
+      <div className="h-screen w-screen text-center flex flex-col justify-center items-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   if (!gameState || !host || !block) {
-    return "loading...";
+    return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
   }
 
   const isHost = !!account && account === host;
