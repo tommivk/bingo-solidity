@@ -16,8 +16,8 @@ const HostActions = ({ contractData, gameState }: Props) => {
   const [modalOpen, setModalOpen] = useState(
     gameState.gameStatus === GameStatus.SETUP
   );
+
   const startGameEnabled = gameState.gameStatus === GameStatus.SETUP;
-  const drawNumberEnabled = gameState.gameStatus === GameStatus.RUNNING;
 
   const { config: startGameConfig, error: prepareStartGameError } =
     usePrepareContractWrite({
@@ -33,32 +33,11 @@ const HostActions = ({ contractData, gameState }: Props) => {
     },
   });
 
-  const { config: drawNumberConfig, error: prepareDrawNumberError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "drawNumber",
-      enabled: drawNumberEnabled,
-    });
-
-  const { write: drawNumber, isLoading: drawNumberLoading } = useContractWrite({
-    ...drawNumberConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to draw number"));
-    },
-  });
-
   const handleStartGame = () => {
     if (prepareStartGameError) {
       return toast.error("Error");
     }
     startGame?.();
-  };
-
-  const handleDrawNumber = () => {
-    if (prepareDrawNumberError) {
-      return toast.error("Error");
-    }
-    drawNumber?.();
   };
 
   return (
@@ -80,14 +59,6 @@ const HostActions = ({ contractData, gameState }: Props) => {
             Start Game
           </Button>
         </div>
-      )}
-
-      {drawNumberEnabled && (
-        <>
-          <Button onClick={handleDrawNumber} loading={drawNumberLoading}>
-            Draw number
-          </Button>
-        </>
       )}
     </div>
   );

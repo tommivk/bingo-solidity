@@ -14,6 +14,7 @@ import Button from "./Button";
 import { Block } from "@ethersproject/abstract-provider";
 import { useState } from "react";
 import Modal from "./Modal";
+import DebugModal from "./DebugModal";
 
 type Props = {
   contractData: BingoContractData;
@@ -287,6 +288,12 @@ const PlayerActions = ({
             )}
           </>
         )}
+
+      {gameState.gameStatus == GameStatus.RUNNING && (
+        <div className="absolute left-10">
+          <DebugModal contractData={contractData} />
+        </div>
+      )}
     </div>
   );
 };
