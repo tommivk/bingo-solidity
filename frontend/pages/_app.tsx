@@ -38,7 +38,13 @@ export default function App({ Component, pageProps }: AppProps) {
       <WagmiConfig client={client}>
         <Component {...pageProps} />
       </WagmiConfig>
-      <Web3Modal projectId={PROJECT_ID} ethereumClient={ethereumClient} />
+      <Web3Modal
+        projectId={PROJECT_ID}
+        ethereumClient={ethereumClient}
+        themeMode="dark"
+        themeColor="blue"
+        themeBackground="themeColor"
+      />
       <ToastContainer position="bottom-right" theme="dark" />
     </>
   );
