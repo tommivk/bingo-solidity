@@ -5,6 +5,7 @@ import {
   useContractEvent,
   useBlockNumber,
   useProvider,
+  useNetwork,
 } from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
@@ -19,14 +20,17 @@ import { toast } from "react-toastify";
 import PlayerActions from "../../components/PlayerActions";
 import GameInfoCard from "../../components/GameInfoCard";
 import { useEffect, useState } from "react";
+import WrongNetworkError from "../../components/WrongNetworkError";
 
 const AddressZero = ethers.constants.AddressZero;
+const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 const Game = ({ contractAddress }: { contractAddress: string }) => {
   const [block, setBlock] = useState<Block>();
 
   const { address: account } = useAccount();
   const provider = useProvider();
+  const { chain } = useNetwork();
 
   const contractData: BingoContractData = {
     address: contractAddress,
@@ -179,6 +183,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
 
   return (
     <div className="min-h-screen flex flex-col justify-between relative">
+      {chain && chain.id !== CHAIN_ID && <WrongNetworkError />}
       <div>
         <Link href={"/"}>
           <Button className="mt-4 ml-4">All games</Button>

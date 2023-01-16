@@ -17,11 +17,14 @@ import RoomList from "../components/RoomList";
 import Modal from "../components/Modal";
 import { useState } from "react";
 import { useBalance } from "wagmi";
+import { useNetwork } from "wagmi";
 import Input from "../components/Input";
 import Dropdown from "../components/Dropdown";
+import WrongNetworkError from "../components/WrongNetworkError";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
+const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -39,6 +42,7 @@ export default function Home() {
   const { data: balance } = useBalance({
     address: address,
   });
+  const { chain } = useNetwork();
 
   const { write: createRoom, isLoading: createRoomLoading } = useContractWrite({
     ...contractData,
@@ -127,7 +131,10 @@ export default function Home() {
         <meta name="description" content="Bingo" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div className="m-4 flex justify-end items-center flex-wrap gap-2">
+
+      {chain && chain.id !== CHAIN_ID && <WrongNetworkError />}
+
+      <div className="p-4 flex justify-end items-center flex-wrap gap-2">
         {address && balance ? (
           <Dropdown address={address} balance={balance} />
         ) : (
