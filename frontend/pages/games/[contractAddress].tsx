@@ -168,7 +168,9 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     eventName: "NumberDrawn",
     listener(number) {
       updateDrawnNumbers();
-      updateIsBingo();
+      if (ticket && ticket.valid) {
+        updateIsBingo();
+      }
       updateGameState();
       toast.info(`New number drawn: ${number}`);
     },
@@ -195,8 +197,10 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
       } else {
         toast.info("Bingo has been found!");
       }
+      if (ticket && ticket.valid) {
+        updateIsWinner();
+      }
       updateGameState();
-      updateIsWinner();
       updateWinners();
     },
   });
