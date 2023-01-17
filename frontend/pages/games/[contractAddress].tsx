@@ -229,7 +229,8 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     isWinnerLoading ||
     isBingoLoading ||
     winnersLoading ||
-    blockLoading
+    blockLoading ||
+    !block
   ) {
     return (
       <div className="h-screen w-screen text-center flex flex-col justify-center items-center">
@@ -238,7 +239,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     );
   }
 
-  if (!gameState || !host || !block) {
+  if (!gameState || !host) {
     return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
   }
 
