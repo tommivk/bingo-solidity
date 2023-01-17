@@ -11,10 +11,10 @@ const useBlock = (provider?: Provider) => {
     try {
       const blockNumber = await provider.getBlockNumber();
       const block = await provider.getBlock(blockNumber);
-      if (!block) throw "Block was undefined";
       setData(block);
       setError(false);
     } catch (error: any) {
+      console.error("Error happened while fetching newest block: ", error);
       setError(error);
     } finally {
       setIsLoading(false);
