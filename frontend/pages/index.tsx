@@ -174,7 +174,7 @@ export default function Home() {
                     </p>
                   )}
                 </td>
-                <td className="font-semibold pl-2">ETH</td>
+                <td className="font-semibold pl-2">MATIC</td>
               </tr>
               <tr className="h-2" />
               <tr>

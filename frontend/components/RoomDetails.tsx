@@ -44,7 +44,8 @@ const RoomDetails = ({ contractAddress }: Props) => {
             <p>Game status: {parseGameStatus(data.gameStatus)}</p>
             <p>
               Ticket cost:{" "}
-              {data.ticketCost && ethers.utils.formatEther(data.ticketCost)} ETH
+              {data.ticketCost && ethers.utils.formatEther(data.ticketCost)}{" "}
+              MATIC
             </p>
           </>
         )}
