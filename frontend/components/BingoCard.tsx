@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
 
+const StarIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 260 245"
+      className={className}
+    >
+      <path d="m56,237 74-228 74,228L10,96h240" />
+    </svg>
+  );
+};
+
 type Props = {
   card: readonly (number | string)[];
   numbersDrawn: readonly number[];
@@ -33,13 +45,17 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
         <div
           key={index}
           className={`${
-            size === "large" ? "p-5" : "p-1"
+            size === "large" ? "h-[74px] w-[74px]" : "h-[34px] w-[34px]"
           } bg-slate-700 text-slate-200 flex items-center justify-center ${
             markedNumbers[index] || index == 12 ? "bg-markedNumber" : ""
           }`}
         >
           {index == 12 ? (
-            <span className="text-xl text-yellow-400">*</span>
+            <StarIcon
+              className={`fill-yellow-400 ${
+                size === "large" ? "h-12 w-12" : "h-5 w-5"
+              }`}
+            />
           ) : (
             num
           )}
