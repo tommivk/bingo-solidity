@@ -10,9 +10,12 @@ async function main() {
   const keyHash =
     "0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f";
 
+  const gameFee = 20000;
+
   const BingoFactory = await ethers.getContractFactory("BingoFactory");
   const bingoFactory = await BingoFactory.deploy(
     deployer.address,
+    gameFee,
     vrfCoordinator,
     linkTokenContract,
     keyHash,
