@@ -6,8 +6,10 @@ import { smock, MockContract } from "@defi-wonderland/smock";
 import { Bingo, Bingo__factory } from "../typechain-types";
 import { time } from "@nomicfoundation/hardhat-network-helpers";
 
-const ticketCost = 200;
+const ticketCost = 250;
+const minPlayers = 1;
 const maxPlayers = 3;
+const gameFee = 200;
 
 let accountA: SignerWithAddress;
 let accountB: SignerWithAddress;
@@ -36,6 +38,8 @@ describe("Bingo", function () {
     bingo = await contract.deploy(
       accountA.address,
       ticketCost,
+      gameFee,
+      minPlayers,
       maxPlayers,
       vrfCoordinator.address,
       0,
@@ -155,6 +159,8 @@ describe("checkBingo tests", async () => {
     bingo = await Contract.deploy(
       accountA.address,
       ticketCost,
+      gameFee,
+      minPlayers,
       maxPlayers,
       vrfCoordinator.address,
       0,
@@ -255,6 +261,8 @@ describe("Call Bingo tests", () => {
     bingo = await Contract.deploy(
       accountA.address,
       ticketCost,
+      gameFee,
+      minPlayers,
       maxPlayers,
       vrfCoordinator.address,
       0,
@@ -381,6 +389,8 @@ describe("Withdraw tests", () => {
     bingo = await Contract.deploy(
       accountA.address,
       ticketCost,
+      gameFee,
+      minPlayers,
       maxPlayers,
       vrfCoordinator.address,
       0,
@@ -447,12 +457,12 @@ describe("Withdraw tests", () => {
 
     await time.increase(bingoCallPeriod);
 
-    const balanceIncrease = await getBalanceIncrease(
+    const balanceIncreaseB = await getBalanceIncrease(
       accountB,
       bingo.connect(accountB).withdrawWinnings
     );
 
-    expect(balanceIncrease).to.equal(ticketCost * 2);
+    expect(balanceIncreaseB).to.equal(ticketCost * 2 - gameFee);
   });
 
   it("Multiple winners should be able to withdraw and balances should be increased correctly", async () => {
@@ -483,9 +493,13 @@ describe("Withdraw tests", () => {
       accountC,
       bingo.connect(accountC).withdrawWinnings
     );
-    expect(increaseA).to.equal(ticketCost);
-    expect(increaseB).to.equal(ticketCost);
-    expect(increaseC).to.equal(ticketCost);
+
+    const totalPrice = ethers.BigNumber.from(ticketCost * 3).sub(gameFee);
+    const price = totalPrice.div(3);
+
+    expect(increaseA).to.equal(price.add(gameFee)); // accountA is the contract deployer
+    expect(increaseB).to.equal(price);
+    expect(increaseC).to.equal(price);
   });
 
   it("Winner should not be able to withdraw twice", async () => {

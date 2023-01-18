@@ -8,6 +8,8 @@ let contractAddress: string;
 let accountA: SignerWithAddress;
 let accountB: SignerWithAddress;
 
+const gameFee = 20000;
+
 describe("BingoFactory tests", () => {
   beforeEach(async () => {
     const VRFCoordinator = await ethers.getContractFactory(
@@ -19,6 +21,7 @@ describe("BingoFactory tests", () => {
     [accountA, accountB] = await ethers.getSigners();
     bingoFactory = await contract.deploy(
       accountA.address,
+      gameFee,
       vrfCoordinator.address,
       ethers.constants.AddressZero,
       ethers.constants.HashZero
