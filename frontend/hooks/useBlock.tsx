@@ -25,6 +25,9 @@ const useBlock = (provider?: Provider) => {
     if (provider) {
       provider.on("block", () => getBlock(provider));
     }
+    return () => {
+      provider?.removeAllListeners("block");
+    };
   }, [provider, getBlock]);
 
   return { data, isLoading, error };
