@@ -447,6 +447,28 @@ describe("Withdraw tests", () => {
     );
   });
 
+  it("transferFee should transfer game fee to the contract deployer and be callable only once", async () => {
+    await bingo
+      .connect(accountB)
+      .buyTicket(accountB.address, { value: ticketCost });
+    await bingo.startGame();
+    await expect(bingo.transferGameFee()).to.be.rejectedWith(
+      "The game has not ended yet"
+    );
+    await setAllNumbersDrawn();
+    await bingo.connect(accountB).callBingo();
+
+    const balanceIncrease = await getBalanceIncrease(
+      accountA, // accountA is the contract deployer
+      bingo.connect(accountA).transferGameFee
+    );
+    expect(balanceIncrease).to.equal(gameFee);
+
+    await expect(bingo.transferGameFee()).to.be.rejectedWith(
+      "Game fee has already been transferred"
+    );
+  });
+
   it("Winner should be able to withdraw and balance should be increased correct amount", async () => {
     await bingo
       .connect(accountB)
