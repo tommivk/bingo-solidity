@@ -20,6 +20,8 @@ const errorMessages = [
   "Insufficient amount sent",
   "This address already owns a ticket",
   "Insufficient funds",
+  "MinPlayers * TicketCost must be larger than the game fee",
+  "Max player count must be larger or equal to min player count",
 ];
 
 export const parseErrorMessage = (
