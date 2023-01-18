@@ -12,6 +12,16 @@ export const abi = [
         "type": "uint256"
       },
       {
+        "internalType": "uint256",
+        "name": "_gameFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint8",
+        "name": "_minPlayers",
+        "type": "uint8"
+      },
+      {
         "internalType": "uint8",
         "name": "_maxPlayers",
         "type": "uint8"
@@ -180,6 +190,19 @@ export const abi = [
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "bingoFactory",
+    "outputs": [
+      {
+        "internalType": "contract BingoFactory",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -256,6 +279,11 @@ export const abi = [
       },
       {
         "internalType": "uint8",
+        "name": "minPlayers",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
         "name": "maxPlayers",
         "type": "uint8"
       },
@@ -283,6 +311,32 @@ export const abi = [
         "internalType": "enum Bingo.GameStatus",
         "name": "gameStatus",
         "type": "uint8"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gameFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gameFeePaid",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -324,6 +378,11 @@ export const abi = [
             "internalType": "uint256",
             "name": "ticketCost",
             "type": "uint256"
+          },
+          {
+            "internalType": "uint8",
+            "name": "minPlayers",
+            "type": "uint8"
           },
           {
             "internalType": "uint8",
@@ -483,6 +542,13 @@ export const abi = [
   {
     "inputs": [],
     "name": "startGame",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "transferGameFee",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

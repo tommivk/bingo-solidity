@@ -7,6 +7,11 @@ export const abi = [
         "type": "address"
       },
       {
+        "internalType": "uint256",
+        "name": "_gameFee",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "_vrfCoordinator",
         "type": "address"
@@ -54,6 +59,12 @@ export const abi = [
       {
         "indexed": false,
         "internalType": "uint8",
+        "name": "_minPlayers",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint8",
         "name": "_maxPlayers",
         "type": "uint8"
       }
@@ -73,6 +84,19 @@ export const abi = [
     ],
     "name": "OwnerChanged",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_newFee",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeGameFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -120,6 +144,11 @@ export const abi = [
       },
       {
         "internalType": "uint8",
+        "name": "_minPlayers",
+        "type": "uint8"
+      },
+      {
+        "internalType": "uint8",
         "name": "_maxPlayers",
         "type": "uint8"
       }
@@ -127,6 +156,19 @@ export const abi = [
     "name": "createRoom",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gameFee",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
