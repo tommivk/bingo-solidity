@@ -31,9 +31,6 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       chainId: 31337,
-      mining: {
-        interval: 5000,
-      },
     },
     goerli: {
       url: ALCHEMY_GOERLI_API_URL,
