@@ -18,21 +18,26 @@ contract BingoFactory is AutomationCompatible {
     address public owner;
     Bingo[] contracts;
 
+    uint public gameFee;
+
     event NewRoomCreated(
         address indexed _creator,
         address indexed _contractAddress,
         uint _ticketCost,
+        uint8 _minPlayers,
         uint8 _maxPlayers
     );
     event OwnerChanged(address indexed _newOwner);
 
     constructor(
         address _owner,
+        uint _gameFee,
         address _vrfCoordinator,
         address _linkTokenContract,
         bytes32 _keyHash
     ) {
         owner = _owner;
+        gameFee = _gameFee;
         vrfCoordinator = _vrfCoordinator;
         linkTokenContract = _linkTokenContract;
         keyHash = _keyHash;
@@ -41,10 +46,16 @@ contract BingoFactory is AutomationCompatible {
         vrfSubscriptionId = COORDINATOR.createSubscription();
     }
 
-    function createRoom(uint _ticketCost, uint8 _maxPlayers) public payable {
+    function createRoom(
+        uint _ticketCost,
+        uint8 _minPlayers,
+        uint8 _maxPlayers
+    ) public payable {
         Bingo bingo = new Bingo{value: msg.value}(
             msg.sender,
             _ticketCost,
+            gameFee,
+            _minPlayers,
             _maxPlayers,
             vrfCoordinator,
             vrfSubscriptionId,
@@ -56,6 +67,7 @@ contract BingoFactory is AutomationCompatible {
             msg.sender,
             address(bingo),
             _ticketCost,
+            _minPlayers,
             _maxPlayers
         );
     }
@@ -88,6 +100,10 @@ contract BingoFactory is AutomationCompatible {
     function changeOwner(address _owner) public onlyOwner {
         owner = _owner;
         emit OwnerChanged(_owner);
+    }
+
+    function changeGameFee(uint _newFee) external onlyOwner {
+        gameFee = _newFee;
     }
 
     // 1000000000000000000 = 1 LINK

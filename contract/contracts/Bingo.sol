@@ -2,6 +2,7 @@
 pragma solidity ^0.8.9;
 
 // import "hardhat/console.sol";
+import "./BingoFactory.sol";
 import "./VRFConsumerBaseV2.sol";
 import "./interfaces/VRFCoordinatorV2Interface.sol";
 
@@ -20,6 +21,7 @@ contract Bingo is VRFConsumerBaseV2 {
 
     struct GameState {
         uint ticketCost;
+        uint8 minPlayers;
         uint8 maxPlayers;
         uint8 totalNumbersDrawn;
         uint8 bingoCallPeriod;
@@ -31,6 +33,10 @@ contract Bingo is VRFConsumerBaseV2 {
     }
 
     address public host;
+
+    BingoFactory public bingoFactory;
+    uint public gameFee;
+    bool public gameFeePaid;
 
     GameState public game;
 
@@ -72,16 +78,30 @@ contract Bingo is VRFConsumerBaseV2 {
     constructor(
         address _host,
         uint _ticketCost,
+        uint _gameFee,
+        uint8 _minPlayers,
         uint8 _maxPlayers,
         address _vrfCoordinator,
         uint64 _vrfSubscriptionId,
         bytes32 _vrfKeyHash
     ) payable VRFConsumerBaseV2(_vrfCoordinator) {
+        require(_minPlayers > 0, "Minimum player count is 1");
+        require(
+            _minPlayers <= _maxPlayers,
+            "Max player count must be larger or equal to min player count"
+        );
+        require(
+            (_minPlayers * _ticketCost) > _gameFee,
+            "MinPlayers * TicketCost must be larger than the game fee"
+        );
+        bingoFactory = BingoFactory(payable(msg.sender));
         host = _host;
+        gameFee = _gameFee;
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
         vrfSubscriptionId = _vrfSubscriptionId;
         vrfKeyHash = _vrfKeyHash;
         game.ticketCost = _ticketCost;
+        game.minPlayers = _minPlayers;
         game.maxPlayers = _maxPlayers;
         game.bingoCallPeriod = 3 minutes;
         game.numbersLeft = numbers;
@@ -211,17 +231,34 @@ contract Bingo is VRFConsumerBaseV2 {
         );
         require(winners[msg.sender], "You are not a winner");
 
+        if (!gameFeePaid) {
+            transferGameFee();
+        }
+
         Ticket storage ticket = addressToTicket[msg.sender];
         require(!ticket.paidOut, "You have already withdrawed");
 
         (bool success, ) = payable(msg.sender).call{
-            value: (game.ticketCost * game.joinedPlayers.length) /
+            value: ((game.ticketCost * game.joinedPlayers.length) - gameFee) /
                 game.winnerCount
         }("");
         require(success, "Failed to withdraw");
 
         ticket.paidOut = true;
         lock = false;
+    }
+
+    function transferGameFee() public {
+        require(!gameFeePaid, "Game fee has already been transferred");
+        gameFeePaid = true;
+        require(
+            game.gameStatus == GameStatus.BINGOFOUND,
+            "The game has not ended yet"
+        );
+        (bool success, ) = payable(address(bingoFactory)).call{value: gameFee}(
+            ""
+        );
+        require(success, "Failed to send fee");
     }
 
     // Check for bingo
@@ -329,6 +366,10 @@ contract Bingo is VRFConsumerBaseV2 {
         require(
             game.gameStatus == GameStatus.SETUP,
             "The game has already started"
+        );
+        require(
+            game.joinedPlayers.length >= game.minPlayers,
+            "Cannot start the game before minimum amount of players have joined"
         );
         game.gameStatus = GameStatus.RUNNING;
         emit GameStarted(uint64(block.timestamp));
