@@ -17,7 +17,9 @@ const HostActions = ({ contractData, gameState }: Props) => {
     gameState.gameStatus === GameStatus.SETUP
   );
 
-  const startGameEnabled = gameState.gameStatus === GameStatus.SETUP;
+  const startGameEnabled =
+    gameState.gameStatus === GameStatus.SETUP &&
+    gameState.joinedPlayers.length >= gameState.minPlayers;
 
   const { config: startGameConfig, error: prepareStartGameError } =
     usePrepareContractWrite({
@@ -44,7 +46,12 @@ const HostActions = ({ contractData, gameState }: Props) => {
     <div className="flex justify-center items-center mb-4">
       <Modal open={modalOpen} closeButton={false}>
         <Modal.Header>You are the game host</Modal.Header>
-        <Modal.Content>You can start the game when you like</Modal.Content>
+        <Modal.Content>
+          <p className="max-w-xs">
+            You can start the game when at least minimum amount of players have
+            joined.
+          </p>
+        </Modal.Content>
         <Modal.Footer>
           <Button onClick={() => setModalOpen(false)}>Close</Button>
         </Modal.Footer>

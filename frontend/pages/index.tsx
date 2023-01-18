@@ -29,7 +29,9 @@ const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [ticketCost, setTicketCost] = useState("0");
+  const [minPlayers, setMinPlayers] = useState("1");
   const [maxPlayers, setMaxPlayers] = useState("5");
+  const [minPlayersError, setMinPlayersError] = useState("");
   const [maxPlayersError, setMaxPlayersError] = useState("");
   const [ticketCostError, setTicketCostError] = useState("");
 
@@ -54,8 +56,12 @@ export default function Home() {
         : undefined,
     },
     args:
-      ticketCost && maxPlayers
-        ? [ethers.utils.parseUnits(ticketCost, "ether"), Number(maxPlayers)]
+      ticketCost && maxPlayers && minPlayers
+        ? [
+            ethers.utils.parseUnits(ticketCost, "ether"),
+            Number(minPlayers),
+            Number(maxPlayers),
+          ]
         : undefined,
     onError({ message, stack }) {
       toast.error(
@@ -107,6 +113,15 @@ export default function Home() {
       return setTicketCostError("Value must be positive");
     }
     setTicketCostError("");
+  };
+
+  const handleMinPlayersChange = (event: any) => {
+    const value = event.target.value;
+    setMinPlayers(value);
+    if (value && (value < 1 || value > 255)) {
+      return setMinPlayersError("Value must be between 1 and 255");
+    }
+    setMinPlayersError("");
   };
 
   const handleMaxPlayersChange = (event: any) => {
@@ -175,6 +190,29 @@ export default function Home() {
                   )}
                 </td>
                 <td className="font-semibold pl-2">MATIC</td>
+              </tr>
+              <tr className="h-2" />
+              <tr>
+                <th className="text-left pb-1">Min players</th>
+              </tr>
+              <tr>
+                <td>
+                  <Input
+                    className="w-full"
+                    type="number"
+                    value={minPlayers}
+                    min={1}
+                    max={255}
+                    onChange={handleMinPlayersChange}
+                    allowNegative={false}
+                    allowDecimals={false}
+                  />
+                  {minPlayersError && (
+                    <p className="text-red-500 text-center pt-1 text-sm">
+                      {minPlayersError}
+                    </p>
+                  )}
+                </td>
               </tr>
               <tr className="h-2" />
               <tr>

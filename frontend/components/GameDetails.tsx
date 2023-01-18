@@ -21,7 +21,7 @@ const GameDetails = ({
   contractData,
   ticket,
 }: Props) => {
-  const { maxPlayers, joinedPlayers } = gameState;
+  const { minPlayers, maxPlayers, joinedPlayers } = gameState;
   const AddressZero = ethers.constants.AddressZero;
 
   const claimHostEnabled = host === AddressZero && !!ticket && ticket.valid;
@@ -48,7 +48,7 @@ const GameDetails = ({
   };
 
   return (
-    <div className="p-4 text-slate-300">
+    <div className="pt-4 px-4 text-slate-300 text-sm">
       <p>
         Game address: <span className="break-all">{contractData.address}</span>
       </p>
@@ -59,7 +59,10 @@ const GameDetails = ({
         </Button>
       )}
       <div>
-        Players joined: {joinedPlayers.length} / {maxPlayers}
+        <p>
+          Players joined: {joinedPlayers.length} / {maxPlayers}
+        </p>
+        <p>Min players: {minPlayers}</p>
       </div>
     </div>
   );
