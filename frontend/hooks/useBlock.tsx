@@ -23,6 +23,7 @@ const useBlock = (provider?: Provider) => {
 
   useEffect(() => {
     if (provider) {
+      getBlock(provider);
       provider.on("block", () => getBlock(provider));
     }
     return () => {
