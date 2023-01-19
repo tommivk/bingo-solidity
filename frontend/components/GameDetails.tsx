@@ -38,6 +38,9 @@ const GameDetails = ({
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to claim host"));
     },
+    onSuccess: async (data) => {
+      await data.wait();
+    },
   });
 
   const handleClaimHost = () => {

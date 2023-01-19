@@ -69,7 +69,8 @@ export default function Home() {
           parseErrorMessage(message, "Failed to create game")
       );
     },
-    onSuccess() {
+    onSuccess: async (data) => {
+      await data.wait();
       setModalOpen(false);
     },
   });

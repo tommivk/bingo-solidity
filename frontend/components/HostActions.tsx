@@ -33,6 +33,9 @@ const HostActions = ({ contractData, gameState }: Props) => {
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to start the game"));
     },
+    onSuccess: async (data) => {
+      await data.wait();
+    },
   });
 
   const handleStartGame = () => {

@@ -134,6 +134,10 @@ const PlayerActions = ({
     onError({ message }) {
       toast.error(parseErrorMessage(message, "Failed to call bingo"));
     },
+    onSuccess: async (data) => {
+      await data.wait();
+      toast.info("Bingo successfully called!");
+    },
   });
 
   const handleLeaveGame = () => {
