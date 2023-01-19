@@ -224,7 +224,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     isBingoError ||
     winnersError ||
     gameFeeError ||
-    blockError
+    (!block && blockError)
   ) {
     return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
   }
