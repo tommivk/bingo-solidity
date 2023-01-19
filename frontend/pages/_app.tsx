@@ -45,7 +45,11 @@ export default function App({ Component, pageProps }: AppProps) {
         themeColor="blue"
         themeBackground="themeColor"
       />
-      <ToastContainer position="bottom-right" theme="dark" />
+      <ToastContainer
+        position="bottom-right"
+        theme="dark"
+        pauseOnFocusLoss={false}
+      />
     </>
   );
 }
