@@ -136,7 +136,6 @@ const PlayerActions = ({
     },
     onSuccess: async (data) => {
       await data.wait();
-      toast.info("Bingo successfully called!");
     },
   });
 
