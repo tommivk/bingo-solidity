@@ -4,6 +4,7 @@ import { useContractRead } from "wagmi";
 import { BingoContractData } from "../types";
 import { abi as BingoContractAbi } from "../abi/Bingo";
 import Spinner from "./Spinner";
+import { gameStatusToString } from "../util";
 
 type Props = {
   contractAddress: string;
@@ -15,16 +16,12 @@ const RoomDetails = ({ contractAddress }: Props) => {
     abi: [...BingoContractAbi] as const,
   };
 
-  const { data, isLoading } = useContractRead({
+  const { data: gameState, isLoading } = useContractRead({
     ...contractData,
     functionName: "getGame",
   });
 
-  const parseGameStatus = (status: number) => {
-    if (status === 0) return "Lobby";
-    if (status === 1) return "Running";
-    if (status === 2) return "Finished";
-  };
+  const gameStatus = gameStatusToString(gameState);
 
   return (
     <Link href={`/games/${contractAddress}`}>
@@ -32,19 +29,21 @@ const RoomDetails = ({ contractAddress }: Props) => {
         <p className="p-3 text-center text-slate-200 text-ellipsis overflow-hidden">
           {contractAddress}
         </p>
-        {isLoading || !data ? (
+        {isLoading || !gameState ? (
           <div className="flex justify-center">
             <Spinner size={30} />
           </div>
         ) : (
           <>
             <p>
-              Players joined: {data.joinedPlayers.length} / {data.maxPlayers}
+              Players joined: {gameState.joinedPlayers.length} /{" "}
+              {gameState.maxPlayers}
             </p>
-            <p>Game status: {parseGameStatus(data.gameStatus)}</p>
+            <p>Game status: {gameStatus}</p>
             <p>
               Ticket cost:{" "}
-              {data.ticketCost && ethers.utils.formatEther(data.ticketCost)}{" "}
+              {gameState.ticketCost &&
+                ethers.utils.formatEther(gameState.ticketCost)}{" "}
               MATIC
             </p>
           </>

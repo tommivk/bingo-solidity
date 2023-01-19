@@ -1,3 +1,5 @@
+import { GameState } from "./types";
+
 const errorMessages = [
   "The game has already started",
   "The game has not started yet",
@@ -34,4 +36,19 @@ export const parseErrorMessage = (
     errorString?.toLowerCase().includes(message.toLowerCase())
   );
   return errorMsg ?? fallback;
+};
+
+export const gameStatusToString = (gameState: GameState | undefined) => {
+  if (!gameState) return;
+
+  const players = gameState.joinedPlayers.length;
+
+  if (gameState.gameStatus === 0) {
+    if (players < gameState.minPlayers) {
+      return "Waiting for players";
+    }
+    return "Waiting for the host to start the game";
+  }
+  if (gameState.gameStatus === 1) return "Running";
+  if (gameState.gameStatus === 2) return "Finished";
 };

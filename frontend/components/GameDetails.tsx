@@ -3,7 +3,7 @@ import { BingoContractData, GameState, Ticket } from "../types";
 import { ethers } from "ethers";
 import Button from "./Button";
 import { toast } from "react-toastify";
-import { parseErrorMessage } from "../util";
+import { gameStatusToString, parseErrorMessage } from "../util";
 
 type Props = {
   host: Address;
@@ -63,6 +63,7 @@ const GameDetails = ({
           Players joined: {joinedPlayers.length} / {maxPlayers}
         </p>
         <p>Min players: {minPlayers}</p>
+        <p>Game status: {gameStatusToString(gameState)}</p>
       </div>
     </div>
   );
