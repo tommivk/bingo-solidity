@@ -202,7 +202,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     eventName: "BingoFound",
     listener(address) {
       if (address === account) {
-        toast.info("Bingo successfully called!");
+        toast.success("Bingo successfully called!");
       } else {
         toast.info("Bingo has been found!");
       }
