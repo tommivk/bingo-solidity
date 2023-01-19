@@ -60,6 +60,15 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
   });
 
   const {
+    data: gameFee,
+    isLoading: gameFeeLoading,
+    error: gameFeeError,
+  } = useContractRead({
+    ...contractData,
+    functionName: "gameFee",
+  });
+
+  const {
     data: ticket,
     refetch: updateTicket,
     isLoading: ticketLoading,
@@ -214,6 +223,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     isWinnerError ||
     isBingoError ||
     winnersError ||
+    gameFeeError ||
     blockError
   ) {
     return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
@@ -230,6 +240,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     isBingoLoading ||
     winnersLoading ||
     blockLoading ||
+    gameFeeLoading ||
     !block
   ) {
     return (
@@ -239,7 +250,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     );
   }
 
-  if (!gameState || !host) {
+  if (!gameState || !host || !gameFee) {
     return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
   }
 
@@ -269,9 +280,11 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
             numbersDrawn={numbersDrawn}
           />
           <GameInfoCard
+            gameState={gameState}
             allBingoCards={allBingoCards}
             numbersDrawn={numbersDrawn}
             winners={winners}
+            gameFee={gameFee}
           />
         </div>
       </div>

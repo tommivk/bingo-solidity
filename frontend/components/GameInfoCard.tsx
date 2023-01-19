@@ -4,14 +4,24 @@ import Button from "./Button";
 import BingoNumbers from "./BingoNumbers";
 import { Address } from "wagmi";
 import WinnerList from "./WinnerList";
+import { ethers } from "ethers";
+import { GameState } from "../types";
 
 type Props = {
   winners: ReadonlyArray<Address>;
   allBingoCards: ReadonlyArray<readonly number[]>;
   numbersDrawn: readonly number[];
+  gameFee: ethers.BigNumber;
+  gameState: GameState;
 };
 
-const GameInfoCard = ({ allBingoCards, numbersDrawn, winners }: Props) => {
+const GameInfoCard = ({
+  allBingoCards,
+  numbersDrawn,
+  winners,
+  gameFee,
+  gameState,
+}: Props) => {
   const [tab, setTab] = useState(0);
 
   return (
@@ -23,7 +33,9 @@ const GameInfoCard = ({ allBingoCards, numbersDrawn, winners }: Props) => {
         />
       )}
       {tab === 1 && <BingoNumbers numbersDrawn={numbersDrawn} />}
-      {tab === 2 && <WinnerList winners={winners} />}
+      {tab === 2 && (
+        <WinnerList gameState={gameState} winners={winners} gameFee={gameFee} />
+      )}
 
       <div className="flex gap-2">
         <Button onClick={() => setTab(0)} disabled={tab === 0}>
