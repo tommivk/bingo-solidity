@@ -150,14 +150,14 @@ export default function Home() {
 
       {chain && chain.id !== CHAIN_ID && <WrongNetworkError />}
 
-      <div className="p-4 flex justify-end items-center flex-wrap gap-2">
+      <div className="p-4 flex justify-end sm:fixed top-0 right-0">
         {address && balance ? (
           <Dropdown address={address} balance={balance} />
         ) : (
           <Web3Button />
         )}
       </div>
-      <div className="flex flex-col justify-center items-center">
+      <div className="sm:mt-20 flex flex-col justify-center items-center">
         {address && (
           <Button className="mb-5" onClick={() => setModalOpen(true)}>
             Create a New Game

@@ -7,7 +7,7 @@ type Props = {
 
 const RoomList = ({ rooms }: Props) => {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center pb-20">
       <h1 className="text-xl text-center">Games</h1>
       <ul>
         {rooms
