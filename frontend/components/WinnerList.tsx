@@ -16,7 +16,7 @@ const WinnerList = ({ winners, gameFee, gameState }: Props) => {
   const prizePerWinnerWei = gameState.ticketCost
     .mul(playerCount)
     .sub(gameFee)
-    .div(playerCount);
+    .div(winners.length);
   const prizePerWinner = ethers.utils.formatUnits(prizePerWinnerWei);
 
   return (
