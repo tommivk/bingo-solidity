@@ -298,7 +298,9 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
           gameState={gameState}
           ticket={ticket}
           updateTicket={updateTicket}
+          updateDrawnNumbers={updateDrawnNumbers}
           updateAllBingoCards={updateAllBingoCards}
+          updateIsBingo={updateIsBingo}
           updateGameState={updateGameState}
           isBingo={isBingo}
           isWinner={isWinner}

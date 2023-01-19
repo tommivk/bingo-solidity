@@ -23,6 +23,8 @@ type Props = {
   ticket: Ticket | undefined;
   updateTicket: () => void;
   updateAllBingoCards: () => void;
+  updateDrawnNumbers: () => void;
+  updateIsBingo: () => void;
   updateGameState: () => void;
   isBingo: boolean;
   isWinner: boolean;
@@ -36,6 +38,8 @@ const PlayerActions = ({
   ticket,
   updateTicket,
   updateAllBingoCards,
+  updateIsBingo,
+  updateDrawnNumbers,
   updateGameState,
   isBingo,
   isWinner,
@@ -192,7 +196,12 @@ const PlayerActions = ({
     eventName: "VRFRequested",
     listener(vrfRequestId) {
       if (vrfRequest.requestId && !vrfRequest.fulfilled) {
-        toast.error("Out of sync, pls refresh");
+        console.error("VRF event missed");
+        updateDrawnNumbers();
+        updateTicket();
+        updateGameState();
+        updateAllBingoCards();
+        updateIsBingo();
       }
       setVrfRequest({
         requestId: vrfRequestId,
@@ -207,7 +216,12 @@ const PlayerActions = ({
     eventName: "VRFFulfilled",
     listener(vrfRequestId) {
       if (vrfRequest.requestId && !vrfRequest.requestId.eq(vrfRequestId)) {
-        toast.error("Out of sync, pls refresh");
+        console.error("VRF event missed");
+        updateDrawnNumbers();
+        updateTicket();
+        updateGameState();
+        updateAllBingoCards();
+        updateIsBingo();
       }
       setVrfRequest({ ...vrfRequest, fulfilled: true, requested: false });
     },
