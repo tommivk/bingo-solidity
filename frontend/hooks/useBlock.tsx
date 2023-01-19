@@ -22,12 +22,15 @@ const useBlock = (provider?: Provider) => {
   }, []);
 
   useEffect(() => {
+    const listener = () => {
+      getBlock(provider!);
+    };
     if (provider) {
       getBlock(provider);
-      provider.on("block", () => getBlock(provider));
+      provider.on("block", listener);
     }
     return () => {
-      provider?.removeAllListeners("block");
+      provider?.removeListener("block", listener);
     };
   }, [provider, getBlock]);
 
