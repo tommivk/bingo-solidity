@@ -1,5 +1,4 @@
 import Head from "next/head";
-import { Web3Button } from "@web3modal/react";
 import {
   useContractWrite,
   useContractRead,
@@ -19,8 +18,8 @@ import { useState } from "react";
 import { useBalance } from "wagmi";
 import { useNetwork } from "wagmi";
 import Input from "../components/Input";
-import Dropdown from "../components/Dropdown";
 import WrongNetworkError from "../components/WrongNetworkError";
+import AccountButtons from "../components/AccountButtons";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
@@ -150,13 +149,8 @@ export default function Home() {
 
       {chain && chain.id !== CHAIN_ID && <WrongNetworkError />}
 
-      <div className="p-4 flex justify-end sm:fixed top-0 right-0">
-        {address && balance ? (
-          <Dropdown address={address} balance={balance} />
-        ) : (
-          <Web3Button />
-        )}
-      </div>
+      <AccountButtons address={address} balance={balance} />
+
       <div className="sm:mt-20 flex flex-col justify-center items-center">
         {address && (
           <Button className="mb-5" onClick={() => setModalOpen(true)}>
