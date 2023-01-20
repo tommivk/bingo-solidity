@@ -88,7 +88,7 @@ const Dropdown = ({
     <div ref={dropdownRef} className="relative">
       <div
         onClick={() => setOpen(!open)}
-        className="cursor-pointer border-gray-500 hover:border-gray-400 border-2 w-fit px-4 py-2 rounded-md flex justify-center items-center"
+        className="cursor-pointer border-gray-500 hover:border-gray-400 border-2 w-fit px-4 py-2 rounded-md flex justify-center items-center select-none"
       >
         {address.substring(0, 6)}...
         {address.substring(address.length - 4, address.length)}

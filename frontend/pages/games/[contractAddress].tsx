@@ -269,7 +269,12 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         <Link href={"/"}>
           <Button className="mt-4 ml-4">All games</Button>
         </Link>
-        <AccountButtons address={account} balance={balance} />
+
+        <AccountButtons
+          className="m-4 inline-block justify-start sm:absolute top-0 right-0"
+          address={account}
+          balance={balance}
+        />
 
         <GameDetails
           gameState={gameState}

@@ -65,9 +65,13 @@ export default function Home() {
 
       {chain && chain.id !== CHAIN_ID && <WrongNetworkError />}
 
-      <AccountButtons address={address} balance={balance} />
+      <AccountButtons
+        className="flex justify-end p-4 lg:fixed top-0 right-0"
+        address={address}
+        balance={balance}
+      />
 
-      <div className="sm:mt-20 flex flex-col justify-center items-center">
+      <div className="lg:mt-20 flex flex-col justify-center items-center">
         {address && (
           <Button className="mb-5" onClick={() => setModalOpen(true)}>
             Create a New Game
