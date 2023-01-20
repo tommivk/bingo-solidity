@@ -6,11 +6,12 @@ import Dropdown from "./Dropdown";
 type Props = {
   address: Address | undefined;
   balance: FetchBalanceResult | undefined;
+  className?: string;
 };
 
-const AccountButtons = ({ address, balance }: Props) => {
+const AccountButtons = ({ address, balance, className }: Props) => {
   return (
-    <div className="p-4 flex justify-end sm:fixed top-0 right-0">
+    <div className={className}>
       {address && balance ? (
         <Dropdown address={address} balance={balance} />
       ) : (
