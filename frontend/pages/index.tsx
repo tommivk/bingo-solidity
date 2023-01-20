@@ -1,25 +1,18 @@
 import Head from "next/head";
-import {
-  useContractWrite,
-  useContractRead,
-  useAccount,
-  useContractEvent,
-} from "wagmi";
-import { ethers } from "ethers";
+import { useContractRead, useAccount, useContractEvent } from "wagmi";
 import { abi as BingoFactoryAbi } from "../abi/BingoFactory";
 import { BingoFactoryContractData } from "../types";
 import Button from "../components/Button";
 import { toast } from "react-toastify";
-import { parseErrorMessage } from "../util";
 import Router from "next/router";
 import RoomList from "../components/RoomList";
 import Modal from "../components/Modal";
 import { useState } from "react";
 import { useBalance } from "wagmi";
 import { useNetwork } from "wagmi";
-import Input from "../components/Input";
 import WrongNetworkError from "../components/WrongNetworkError";
 import AccountButtons from "../components/AccountButtons";
+import NewGameForm from "../components/NewGameForm";
 
 const BINGO_FACTORY_ADDRESS =
   process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
@@ -27,12 +20,6 @@ const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [ticketCost, setTicketCost] = useState("0");
-  const [minPlayers, setMinPlayers] = useState("1");
-  const [maxPlayers, setMaxPlayers] = useState("5");
-  const [minPlayersError, setMinPlayersError] = useState("");
-  const [maxPlayersError, setMaxPlayersError] = useState("");
-  const [ticketCostError, setTicketCostError] = useState("");
 
   const contractData: BingoFactoryContractData = {
     address: BINGO_FACTORY_ADDRESS,
@@ -44,35 +31,6 @@ export default function Home() {
     address: address,
   });
   const { chain } = useNetwork();
-
-  const { write: createRoom, isLoading: createRoomLoading } = useContractWrite({
-    ...contractData,
-    mode: "recklesslyUnprepared",
-    functionName: "createRoom",
-    overrides: {
-      value: ticketCost
-        ? ethers.utils.parseUnits(ticketCost, "ether")
-        : undefined,
-    },
-    args:
-      ticketCost && maxPlayers && minPlayers
-        ? [
-            ethers.utils.parseUnits(ticketCost, "ether"),
-            Number(minPlayers),
-            Number(maxPlayers),
-          ]
-        : undefined,
-    onError({ message, stack }) {
-      toast.error(
-        parseErrorMessage(stack) ??
-          parseErrorMessage(message, "Failed to create game")
-      );
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-      setModalOpen(false);
-    },
-  });
 
   const { data: rooms, refetch: refetchRooms } = useContractRead({
     ...contractData,
@@ -90,48 +48,6 @@ export default function Home() {
       refetchRooms();
     },
   });
-
-  const handleCreateGame = () => {
-    if (!ticketCost) {
-      return setTicketCostError("Ticket cost is required");
-    }
-    if (!maxPlayers) {
-      return setMaxPlayersError("Max players is required");
-    }
-
-    try {
-      createRoom?.();
-    } catch (_error) {
-      toast.error("Failed to create game");
-    }
-  };
-
-  const handleTicketCostChange = (event: any) => {
-    const value = event.target.value;
-    setTicketCost(value);
-    if (value < 0) {
-      return setTicketCostError("Value must be positive");
-    }
-    setTicketCostError("");
-  };
-
-  const handleMinPlayersChange = (event: any) => {
-    const value = event.target.value;
-    setMinPlayers(value);
-    if (value && (value < 1 || value > 255)) {
-      return setMinPlayersError("Value must be between 1 and 255");
-    }
-    setMinPlayersError("");
-  };
-
-  const handleMaxPlayersChange = (event: any) => {
-    const value = event.target.value;
-    setMaxPlayers(value);
-    if (value && (value < 1 || value > 255)) {
-      return setMaxPlayersError("Value must be between 1 and 255");
-    }
-    setMaxPlayersError("");
-  };
 
   const { data: vrfId } = useContractRead({
     ...contractData,
@@ -161,89 +77,12 @@ export default function Home() {
       </div>
 
       <Modal open={modalOpen} setModalOpen={setModalOpen}>
-        <Modal.Header>Create a New Game</Modal.Header>
         <Modal.Content>
-          <table>
-            <tbody>
-              <tr>
-                <th className="text-left pb-1">Bet</th>
-              </tr>
-              <tr>
-                <td>
-                  <Input
-                    type="number"
-                    value={ticketCost}
-                    min={0}
-                    step={0.000001}
-                    onChange={handleTicketCostChange}
-                    allowNegative={false}
-                  />
-                  {ticketCostError && (
-                    <p className="text-red-500 text-center pt-1 text-sm">
-                      {ticketCostError}
-                    </p>
-                  )}
-                </td>
-                <td className="font-semibold pl-2">MATIC</td>
-              </tr>
-              <tr className="h-2" />
-              <tr>
-                <th className="text-left pb-1">Min players</th>
-              </tr>
-              <tr>
-                <td>
-                  <Input
-                    className="w-full"
-                    type="number"
-                    value={minPlayers}
-                    min={1}
-                    max={255}
-                    onChange={handleMinPlayersChange}
-                    allowNegative={false}
-                    allowDecimals={false}
-                  />
-                  {minPlayersError && (
-                    <p className="text-red-500 text-center pt-1 text-sm">
-                      {minPlayersError}
-                    </p>
-                  )}
-                </td>
-              </tr>
-              <tr className="h-2" />
-              <tr>
-                <th className="text-left pb-1">Max players</th>
-              </tr>
-              <tr>
-                <td>
-                  <Input
-                    className="w-full"
-                    type="number"
-                    value={maxPlayers}
-                    min={1}
-                    max={255}
-                    onChange={handleMaxPlayersChange}
-                    allowNegative={false}
-                    allowDecimals={false}
-                  />
-                  {maxPlayersError && (
-                    <p className="text-red-500 text-center pt-1 text-sm">
-                      {maxPlayersError}
-                    </p>
-                  )}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <NewGameForm
+            contractData={contractData}
+            setModalOpen={setModalOpen}
+          />
         </Modal.Content>
-        <Modal.Footer>
-          <Button
-            onClick={handleCreateGame}
-            loading={createRoomLoading}
-            disabled={!!ticketCostError || !!maxPlayersError}
-          >
-            Create game
-          </Button>
-        </Modal.Footer>
       </Modal>
     </div>
   );
