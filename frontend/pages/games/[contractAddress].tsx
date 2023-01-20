@@ -5,6 +5,7 @@ import {
   useContractEvent,
   useProvider,
   useNetwork,
+  useBalance,
 } from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
@@ -20,18 +21,23 @@ import GameInfoCard from "../../components/GameInfoCard";
 import WrongNetworkError from "../../components/WrongNetworkError";
 import useBlock from "../../hooks/useBlock";
 import ErrorPage from "../../components/ErrorPage";
+import AccountButtons from "../../components/AccountButtons";
 
 const AddressZero = ethers.constants.AddressZero;
 const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 const Game = ({ contractAddress }: { contractAddress: string }) => {
   const { address: account } = useAccount();
+  const { data: balance } = useBalance({
+    address: account,
+  });
   const provider = useProvider();
   const {
     data: block,
     isLoading: blockLoading,
     error: blockError,
   } = useBlock(provider);
+
   const { chain } = useNetwork();
 
   const contractData: BingoContractData = {
@@ -263,6 +269,8 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
         <Link href={"/"}>
           <Button className="mt-4 ml-4">All games</Button>
         </Link>
+        <AccountButtons address={account} balance={balance} />
+
         <GameDetails
           gameState={gameState}
           host={host}
