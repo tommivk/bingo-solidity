@@ -20,7 +20,7 @@ const WinnerList = ({ winners, gameFee, gameState }: Props) => {
   const prizePerWinner = ethers.utils.formatUnits(prizePerWinnerWei);
 
   return (
-    <div>
+    <div className="max-h-full w-full px-3 overflow-auto">
       <h1 className="text-center text-xl py-2 mb-2">
         Total Winners: {winners.length}
       </h1>
@@ -28,26 +28,34 @@ const WinnerList = ({ winners, gameFee, gameState }: Props) => {
         <tbody>
           <tr>
             <td className="pr-2">Prize Pool:</td>
-            <td>{prizePool} MATIC</td>
+            <td>
+              <span className="break-all">{prizePool}</span> MATIC
+            </td>
           </tr>
           <tr>
             <td className="pr-2">Game Fee:</td>
-            <td>{fee} MATIC</td>
+            <td>
+              <span className="break-all">{fee}</span> MATIC
+            </td>
           </tr>
           <tr>
             <td className="pr-2">Prize Per Winner:</td>
             <td>
-              <span className="text-yellow-500">{prizePerWinner} MATIC</span>
+              <span className="text-yellow-500">
+                <span className="break-all">{prizePerWinner}</span> MATIC
+              </span>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <div className="mt-10">
-        <h1 className="text-center text-xl py-2 mb-2">Winners</h1>
-        <ul>
+      <div className="">
+        <h1 className="text-center text-xl py-2 mb-2 ">Winners</h1>
+        <ul className="">
           {winners.map((address) => (
-            <li key={address}>{address}</li>
+            <li key={address} className="break-all mb-2">
+              {address}
+            </li>
           ))}
         </ul>
       </div>

@@ -25,7 +25,7 @@ const GameInfoCard = ({
   const [tab, setTab] = useState(0);
 
   return (
-    <div className="flex flex-col items-center justify-between p-4 h-[600px] w-[520px] overflow-auto bg-slate-800 rounded-md">
+    <div className="flex flex-col items-center justify-between p-4 h-[600px] w-[520px] max-w-[95vw] bg-slate-800 rounded-md">
       {tab === 0 && (
         <BingoCardList
           allBingoCards={allBingoCards}
@@ -37,7 +37,7 @@ const GameInfoCard = ({
         <WinnerList gameState={gameState} winners={winners} gameFee={gameFee} />
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap mt-4">
         <Button onClick={() => setTab(0)} disabled={tab === 0}>
           All cards
         </Button>

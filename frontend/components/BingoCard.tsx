@@ -39,23 +39,17 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
       data-testid="bingo-card"
       className={`${
         size === "large" ? "w-[400px] h-[400px] p-6" : "w-[200px] h-[200px] p-2"
-      } box-content bg-slate-800 max-w-[100vw] grid grid-cols-5 gap-2 select-none`}
+      } box-border bg-slate-800 max-w-[90vw] max-h-[90vw] grid grid-cols-5 gap-2 select-none aspect-square`}
     >
       {card.map((num: number | string, index) => (
         <div
           key={index}
-          className={`${
-            size === "large" ? "h-[74px] w-[74px]" : "h-[34px] w-[34px]"
-          } bg-slate-700 text-slate-200 flex items-center justify-center ${
+          className={`aspect-square bg-slate-700 text-slate-200 flex items-center justify-center ${
             markedNumbers[index] || index == 12 ? "bg-markedNumber" : ""
           }`}
         >
           {index == 12 ? (
-            <StarIcon
-              className={`fill-yellow-400 ${
-                size === "large" ? "h-12 w-12" : "h-5 w-5"
-              }`}
-            />
+            <StarIcon className={"fill-yellow-400 h-[80%] w-[80%]"} />
           ) : (
             num
           )}
