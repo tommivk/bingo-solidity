@@ -51,7 +51,7 @@ const WinnerList = ({ winners, gameFee, gameState }: Props) => {
 
       <div className="">
         <h1 className="text-center text-xl py-2 mb-2 ">Winners</h1>
-        <ul className="">
+        <ul className="text-center">
           {winners.map((address) => (
             <li key={address} className="break-all mb-2">
               {address}
