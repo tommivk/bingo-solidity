@@ -266,15 +266,16 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     <div className="min-h-screen flex flex-col justify-between relative">
       {chain && chain.id !== CHAIN_ID && <WrongNetworkError />}
       <div>
-        <Link href={"/"}>
-          <Button className="mt-4 ml-4">All games</Button>
-        </Link>
-
-        <AccountButtons
-          className="m-4 inline-block justify-start sm:absolute top-0 right-0"
-          address={account}
-          balance={balance}
-        />
+        <div className="flex flex-wrap mt-4 mx-4 gap-4 justify-between items-center">
+          <Link href={"/"}>
+            <Button className="">All games</Button>
+          </Link>
+          <AccountButtons
+            className="inline-block"
+            address={account}
+            balance={balance}
+          />
+        </div>
 
         <GameDetails
           gameState={gameState}
