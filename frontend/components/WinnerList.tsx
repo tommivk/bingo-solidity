@@ -24,7 +24,7 @@ const WinnerList = ({ winners, gameFee, gameState }: Props) => {
       <h1 className="text-center text-xl py-2 mb-2">
         Total Winners: {winners.length}
       </h1>
-      <table>
+      <table className="m-auto">
         <tbody>
           <tr>
             <td className="pr-2">Prize Pool:</td>
