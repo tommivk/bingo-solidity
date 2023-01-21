@@ -283,7 +283,7 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
           contractData={contractData}
           ticket={ticket}
         />
-        <div className="flex justify-evenly flex-wrap gap-4 mt-10">
+        <div className="flex justify-evenly flex-wrap gap-4 mt-10 mb-2">
           <BingoCard
             card={
               ticket && ticket.valid
