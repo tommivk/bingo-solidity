@@ -1,5 +1,8 @@
 # bingo-solidity
 
+The app is available at: 
+https://bingo-solidity.vercel.app/
+
 
 ## Contract
 
