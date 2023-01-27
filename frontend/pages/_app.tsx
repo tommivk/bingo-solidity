@@ -8,6 +8,7 @@ import { publicProvider } from "wagmi/providers/public";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { ToastContainer } from "react-toastify";
+import NextNProgress from "nextjs-progressbar";
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID ?? "";
 
@@ -37,6 +38,14 @@ export default function App({ Component, pageProps }: AppProps) {
     <>
       <WagmiConfig client={client}>
         <Component {...pageProps} />
+        <NextNProgress
+          color="#29D"
+          startPosition={0.3}
+          stopDelayMs={300}
+          height={1}
+          showOnShallow={true}
+          options={{ showSpinner: false, easing: "ease" }}
+        />
       </WagmiConfig>
       <Web3Modal
         projectId={PROJECT_ID}
