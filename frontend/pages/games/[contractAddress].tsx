@@ -1,29 +1,21 @@
 import Link from "next/link";
-import {
-  useContractRead,
-  useAccount,
-  useContractEvent,
-  useProvider,
-  useNetwork,
-  useBalance,
-} from "wagmi";
+import { useAccount, useProvider, useNetwork, useBalance } from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
 import BingoCard from "../../components/BingoCard";
 import GameDetails from "../../components/GameDetails";
 import Button from "../../components/Button";
 import HostActions from "../../components/HostActions";
-import { ethers } from "ethers";
 import { BingoContractData } from "../../types";
-import { toast } from "react-toastify";
 import PlayerActions from "../../components/PlayerActions";
 import GameInfoCard from "../../components/GameInfoCard";
 import WrongNetworkError from "../../components/WrongNetworkError";
 import useBlock from "../../hooks/useBlock";
 import ErrorPage from "../../components/ErrorPage";
 import AccountButtons from "../../components/AccountButtons";
+import useBingoContractReads from "../../hooks/useBingoContractReads";
+import useBingoContractEvents from "../../hooks/useBingoContractEvents";
 
-const AddressZero = ethers.constants.AddressZero;
 const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 const Game = ({ contractAddress }: { contractAddress: string }) => {
@@ -45,210 +37,38 @@ const Game = ({ contractAddress }: { contractAddress: string }) => {
     abi: [...abi] as const,
   };
 
-  const {
-    data: gameState,
-    refetch: updateGameState,
-    error: gameStateError,
-    isLoading: gameStateLoading,
-  } = useContractRead({
-    ...contractData,
-    functionName: "getGame",
-  });
+  const [data, loading, refetchFuncs, error] = useBingoContractReads(
+    account,
+    contractData
+  );
 
   const {
-    data: host,
-    refetch: updateHost,
-    error: hostError,
-    isLoading: hostLoading,
-  } = useContractRead({
-    ...contractData,
-    functionName: "host",
-  });
+    gameState,
+    host,
+    gameFee,
+    allBingoCards,
+    numbersDrawn,
+    isBingo,
+    isWinner,
+    winners,
+    ticket,
+  } = data;
 
   const {
-    data: gameFee,
-    isLoading: gameFeeLoading,
-    error: gameFeeError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "gameFee",
-  });
+    updateGameState,
+    updateAllBingoCards,
+    updateDrawnNumbers,
+    updateIsBingo,
+    updateTicket,
+  } = refetchFuncs;
 
-  const {
-    data: ticket,
-    refetch: updateTicket,
-    isLoading: ticketLoading,
-    error: ticketError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "getTicket",
-    overrides: {
-      from: account,
-    },
-    args: account && [account],
-    enabled: !!account,
-  });
+  useBingoContractEvents({ contractData, account, ticket, refetchFuncs });
 
-  const {
-    data: allBingoCards = [],
-    refetch: updateAllBingoCards,
-    isLoading: allBingoCardsLoading,
-    error: allBingoCardsError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "getBingoCards",
-  });
-
-  const {
-    data: numbersDrawn = [],
-    refetch: updateDrawnNumbers,
-    isLoading: numbersDrawnLoading,
-    error: numbersDrawnError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "getDrawnNumbers",
-  });
-
-  const {
-    data: isWinner = false,
-    refetch: updateIsWinner,
-    isLoading: isWinnerLoading,
-    error: isWinnerError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "winners",
-    args: account && [account],
-    enabled: !!account,
-  });
-
-  const {
-    data: isBingo = false,
-    refetch: updateIsBingo,
-    isLoading: isBingoLoading,
-    error: isBingoError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "checkBingo",
-    args: ticket && [ticket.card],
-    enabled: !!ticket,
-  });
-
-  const {
-    data: winners = [],
-    refetch: updateWinners,
-    isLoading: winnersLoading,
-    error: winnersError,
-  } = useContractRead({
-    ...contractData,
-    functionName: "getWinners",
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "PlayerLeft",
-    listener(player, _event) {
-      if (player !== account) {
-        updateGameState();
-        updateAllBingoCards();
-      }
-    },
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "HostChanged",
-    listener(newHost) {
-      updateHost();
-      if (newHost === AddressZero) {
-        return toast.info("The game host has left the game");
-      }
-      if (newHost === account) {
-        return toast.info("You are now the game host");
-      }
-      toast.info("The game host has changed");
-    },
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "GameStarted",
-    listener() {
-      updateGameState();
-      toast.info("The game has started");
-    },
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "NumberDrawn",
-    listener(number) {
-      updateDrawnNumbers();
-      if (ticket && ticket.valid) {
-        updateIsBingo();
-      }
-      updateGameState();
-      toast.info(`New number drawn: ${number}`);
-    },
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "TicketBought",
-    listener(to) {
-      if (to !== account) {
-        updateAllBingoCards();
-        updateGameState();
-        toast.info("New player joined the game");
-      }
-    },
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "BingoFound",
-    listener(address) {
-      if (address === account) {
-        toast.success("Bingo successfully called!");
-      } else {
-        toast.info("Bingo has been found!");
-      }
-      if (ticket && ticket.valid) {
-        updateIsWinner();
-      }
-      updateGameState();
-      updateWinners();
-    },
-  });
-
-  if (
-    gameStateError ||
-    hostError ||
-    ticketError ||
-    allBingoCardsError ||
-    numbersDrawnError ||
-    isWinnerError ||
-    isBingoError ||
-    winnersError ||
-    gameFeeError ||
-    (!block && blockError)
-  ) {
+  if (error || (!block && blockError)) {
     return <ErrorPage errorCode={500} errorText={"Internal server error"} />;
   }
 
-  if (
-    gameStateLoading ||
-    hostLoading ||
-    blockLoading ||
-    ticketLoading ||
-    allBingoCardsLoading ||
-    numbersDrawnLoading ||
-    isWinnerLoading ||
-    isBingoLoading ||
-    winnersLoading ||
-    blockLoading ||
-    gameFeeLoading ||
-    !block
-  ) {
+  if (loading || blockLoading || !block) {
     return (
       <div className="h-screen w-screen text-center flex flex-col justify-center items-center">
         <p>Loading...</p>

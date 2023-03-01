@@ -1,20 +1,17 @@
 import { ethers } from "ethers";
-import { toast } from "react-toastify";
-import {
-  usePrepareContractWrite,
-  Address,
-  useContractWrite,
-  useContractEvent,
-} from "wagmi";
+import { Address } from "wagmi";
 import { GameStatus } from "../constants";
 import useCountdown from "../hooks/useCountdown";
 import { BingoContractData, GameState, Ticket } from "../types";
-import { parseErrorMessage } from "../util";
 import Button from "./Button";
 import { Block } from "@ethersproject/abstract-provider";
-import { useState } from "react";
 import Modal from "./Modal";
 import DebugModal from "./DebugModal";
+import useJoinGame from "../hooks/useJoinGame";
+import useLeaveGame from "../hooks/useLeaveGame";
+import useCallBingo from "../hooks/useCallBingo";
+import useWithdrawWinnings from "../hooks/useWithdrawWinnings";
+import useVRFRequest from "../hooks/useVRFRequest";
 
 type Props = {
   contractData: BingoContractData;
@@ -45,15 +42,13 @@ const PlayerActions = ({
   isWinner,
   block,
 }: Props) => {
-  const [vrfRequest, setVrfRequest] = useState<{
-    requested: boolean;
-    fulfilled: boolean;
-    requestId?: ethers.BigNumber;
-  }>({
-    requested: false,
-    fulfilled: false,
-    requestId: undefined,
-  });
+  const updateState = () => {
+    updateTicket();
+    updateAllBingoCards();
+    updateGameState();
+    updateDrawnNumbers();
+    updateIsBingo();
+  };
 
   const leaveGameEnabled =
     gameState &&
@@ -61,182 +56,56 @@ const PlayerActions = ({
     gameState.gameStatus === GameStatus.SETUP &&
     !!ticket.valid;
 
-  const joinGameEnabled =
-    gameState &&
-    !!ticket &&
-    gameState.gameStatus === GameStatus.SETUP &&
-    !ticket.valid;
-
   const callBingoEnabled =
     gameState &&
     gameState.gameStatus !== GameStatus.SETUP &&
     isBingo &&
     !isWinner;
 
-  const { config: joinGameConfig, error: prepareJoinGameError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "buyTicket",
-      overrides: {
-        value: gameState?.ticketCost,
-      },
-      args: account && [account],
-      enabled: joinGameEnabled,
-    });
+  const joinGameEnabled =
+    gameState &&
+    !!ticket &&
+    gameState.gameStatus === GameStatus.SETUP &&
+    !ticket.valid;
 
-  const { write: joinGame, isLoading: joinGameLoading } = useContractWrite({
-    ...joinGameConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to join the game"));
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-      updateTicket();
-      updateAllBingoCards();
-      updateGameState();
-      toast.success("Successfully joined");
-    },
+  const [joinGame, joinGameLoading] = useJoinGame({
+    contractData,
+    gameState,
+    account,
+    enabled: joinGameEnabled,
+    updateState,
   });
 
-  const { config: leaveGameConfig, error: prepareLeaveGameError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "leaveGame",
-      enabled: leaveGameEnabled,
-    });
-
-  const { write: leaveGame, isLoading: leaveGameLoading } = useContractWrite({
-    ...leaveGameConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to leave the game"));
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-      updateTicket();
-      updateAllBingoCards();
-      updateGameState();
-      toast.success("Successfully left the game");
-    },
+  const [leaveGame, leaveGameLoading] = useLeaveGame({
+    contractData,
+    enabled: leaveGameEnabled,
+    updateState,
   });
 
-  const { config: callBingoConfig, error: prepareCallBingoError } =
-    usePrepareContractWrite({
-      ...contractData,
-      functionName: "callBingo",
-      overrides: {
-        from: account,
-      },
-      enabled: callBingoEnabled,
-    });
-
-  const { write: callBingo, isLoading: callBingoLoading } = useContractWrite({
-    ...callBingoConfig,
-    onError({ message }) {
-      toast.error(parseErrorMessage(message, "Failed to call bingo"));
-    },
-    onSuccess: async (data) => {
-      await data.wait();
-    },
+  const [callBingo, callBingoLoading] = useCallBingo({
+    contractData,
+    account,
+    enabled: callBingoEnabled,
   });
-
-  const handleLeaveGame = () => {
-    if (prepareLeaveGameError) {
-      return toast.error("Failed to leave the game");
-    }
-    leaveGame?.();
-  };
-
-  const handleJoinGame = () => {
-    if (prepareJoinGameError) {
-      return toast.error("Failed to join the game");
-    }
-    joinGame?.();
-  };
-
-  const handleCallBingo = () => {
-    if (prepareCallBingoError) {
-      return toast.error("Failed to call bingo");
-    }
-    callBingo?.();
-  };
 
   const bingoCallDeadline = ethers.BigNumber.from(
     gameState.bingoFoundTime
       .add(ethers.BigNumber.from(gameState.bingoCallPeriod))
       .sub(block.timestamp)
   );
+
   const [timeLeftToCallBingo] = useCountdown(Number(bingoCallDeadline));
 
   const withdrawWinningsEnabled =
     !!ticket && !ticket.paidOut && isWinner && timeLeftToCallBingo <= 0;
 
-  const {
-    config: withdrawWinningsConfig,
-    error: prepareWithdrawWinningsError,
-    refetch: refetchPrepareWithdrawWinnings,
-  } = usePrepareContractWrite({
-    ...contractData,
-    functionName: "withdrawWinnings",
+  const [withdrawWinnings, withdrawWinningsLoading] = useWithdrawWinnings({
+    contractData,
     enabled: withdrawWinningsEnabled,
+    updateState,
   });
 
-  const { write: withdrawWinnings, isLoading: withdrawWinningsLoading } =
-    useContractWrite({
-      ...withdrawWinningsConfig,
-      onError({ message }) {
-        toast.error(parseErrorMessage(message, "Failed to withdraw"));
-      },
-      onSuccess: async (data) => {
-        await data.wait();
-        updateGameState();
-        updateTicket();
-        toast.success("Successfully withdrawed!");
-      },
-    });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "VRFRequested",
-    listener(vrfRequestId) {
-      if (vrfRequest.requestId && !vrfRequest.fulfilled) {
-        console.error("VRF event missed");
-        updateDrawnNumbers();
-        updateTicket();
-        updateGameState();
-        updateAllBingoCards();
-        updateIsBingo();
-      }
-      setVrfRequest({
-        requestId: vrfRequestId,
-        fulfilled: false,
-        requested: true,
-      });
-    },
-  });
-
-  useContractEvent({
-    ...contractData,
-    eventName: "VRFFulfilled",
-    listener(vrfRequestId) {
-      if (vrfRequest.requestId && !vrfRequest.requestId.eq(vrfRequestId)) {
-        console.error("VRF event missed");
-        updateDrawnNumbers();
-        updateTicket();
-        updateGameState();
-        updateAllBingoCards();
-        updateIsBingo();
-      }
-      setVrfRequest({ ...vrfRequest, fulfilled: true, requested: false });
-    },
-  });
-
-  const handleWithdrawWinnings = async () => {
-    await refetchPrepareWithdrawWinnings();
-    if (prepareWithdrawWinningsError) {
-      return toast.error("Failed to withdraw");
-    }
-    withdrawWinnings?.();
-  };
+  const [vrfRequest] = useVRFRequest({ contractData, updateState });
 
   return (
     <div className="h-32 bg-darkSecondary w-full flex flex-col justify-center items-center">
@@ -245,7 +114,7 @@ const PlayerActions = ({
         <Modal.Content>
           <div className="px-5 py-6">
             <Button
-              onClick={handleCallBingo}
+              onClick={callBingo}
               disabled={!callBingoEnabled}
               loading={callBingoLoading}
             >
@@ -265,7 +134,7 @@ const PlayerActions = ({
               )}
               {!ticket.paidOut && timeLeftToCallBingo <= 0 && (
                 <Button
-                  onClick={handleWithdrawWinnings}
+                  onClick={withdrawWinnings}
                   loading={withdrawWinningsLoading}
                 >
                   Withdraw Winnings
@@ -280,13 +149,13 @@ const PlayerActions = ({
       )}
 
       {joinGameEnabled && (
-        <Button onClick={handleJoinGame} loading={joinGameLoading} size="lg">
+        <Button onClick={joinGame} loading={joinGameLoading} size="lg">
           Join game
         </Button>
       )}
       {leaveGameEnabled && (
         <Button
-          onClick={handleLeaveGame}
+          onClick={leaveGame}
           loading={leaveGameLoading}
           className="sm:mr-auto sm:ml-10"
         >
@@ -296,14 +165,11 @@ const PlayerActions = ({
 
       {gameState.gameStatus == GameStatus.RUNNING &&
         gameState.totalNumbersDrawn < 75 && (
-          <>
-            {!vrfRequest.requested && (
-              <p>Waiting for the next number to be drawn ...</p>
-            )}
-            {vrfRequest.requested && (
-              <p>Waiting for the number to be confirmed ...</p>
-            )}
-          </>
+          <p>
+            {vrfRequest.requested
+              ? "Waiting for the number to be confirmed ..."
+              : "Waiting for the next number to be drawn ..."}
+          </p>
         )}
 
       {gameState.gameStatus == GameStatus.RUNNING && (

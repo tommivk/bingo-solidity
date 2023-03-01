@@ -39,10 +39,10 @@ const HostActions = ({ contractData, gameState }: Props) => {
   });
 
   const handleStartGame = () => {
-    if (prepareStartGameError) {
-      return toast.error("Error");
+    if (prepareStartGameError || !startGame) {
+      return toast.error("Failed to start game");
     }
-    startGame?.();
+    startGame();
   };
 
   return (
