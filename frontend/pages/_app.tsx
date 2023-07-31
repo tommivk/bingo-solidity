@@ -20,7 +20,7 @@ export default function App({ Component, pageProps }: AppProps) {
     chains,
     [alchemyProvider({ apiKey: ACHEMY_API_KEY })],
     {
-      pollingInterval: 5000,
+      pollingInterval: 1000,
     }
   );
 
