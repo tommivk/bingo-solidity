@@ -51,8 +51,6 @@ export default function App({ Component, pageProps }: AppProps) {
         projectId={PROJECT_ID}
         ethereumClient={ethereumClient}
         themeMode="dark"
-        themeColor="blue"
-        themeBackground="themeColor"
       />
       <ToastContainer
         position="bottom-right"
