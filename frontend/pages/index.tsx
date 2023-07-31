@@ -54,6 +54,10 @@ export default function Home() {
     functionName: "vrfSubscriptionId",
   });
   console.log("VRF ID:", vrfId?.toString());
+  console.log("Upkeep address: 0xbc5Ed63E7D72921C8Ad55a112992dA4EB2C757cB");
+  console.log(
+    "Automation: https://automation.chain.link/mumbai/90159972991172793149610583623422489199470758373804547397849247618870238691298"
+  );
 
   return (
     <div>
