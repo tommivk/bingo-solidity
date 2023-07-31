@@ -42,6 +42,9 @@ const useJoinGame = ({
 
   const joinGame = () => {
     if (error || !write) {
+      if (error?.stack?.includes("insufficient funds")) {
+        return toast.error("Insufficient funds");
+      }
       return toast.error("Failed to join the game");
     }
     write();
