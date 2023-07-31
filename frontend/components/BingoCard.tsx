@@ -44,8 +44,10 @@ const BingoCard = ({ card, numbersDrawn, size = "large" }: Props) => {
       {card.map((num: number | string, index) => (
         <div
           key={index}
-          className={`aspect-square bg-slate-700 text-slate-200 flex items-center justify-center ${
-            markedNumbers[index] || index == 12 ? "bg-markedNumber" : ""
+          className={`aspect-square text-slate-200 flex items-center justify-center ${
+            markedNumbers[index] || index == 12
+              ? "bg-markedNumber"
+              : "bg-slate-700"
           }`}
         >
           {index == 12 ? (
