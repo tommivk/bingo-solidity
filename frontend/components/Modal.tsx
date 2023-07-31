@@ -33,10 +33,10 @@ const Modal = ({ open, setModalOpen, children, closeButton = true }: Props) => {
         {closeButton && (
           <div
             data-testid="modal-close-btn"
-            className="absolute top-[-10px] right-[-10px] h-8 w-8 rounded-full bg-slate-600 flex justify-center items-center cursor-pointer hover:bg-slate-500"
+            className="absolute top-2 right-2 h-8 w-8 p-5 text-xl rounded-full bg-slate-600 flex justify-center items-center cursor-pointer hover:bg-slate-500"
             onClick={() => setModalOpen?.(false)}
           >
-            X
+            ✕
           </div>
         )}
         <div className="h-full flex flex-col justify-between items-center">
