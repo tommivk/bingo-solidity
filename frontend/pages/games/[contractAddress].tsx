@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { useAccount, useProvider, useNetwork, useBalance } from "wagmi";
+import {
+  useAccount,
+  useProvider,
+  useNetwork,
+  useBalance,
+  Address,
+} from "wagmi";
 import { GetServerSidePropsContext } from "next";
 import { abi } from "../../abi/Bingo";
 import BingoCard from "../../components/BingoCard";
@@ -18,7 +24,7 @@ import useBingoContractEvents from "../../hooks/useBingoContractEvents";
 
 const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
-const Game = ({ contractAddress }: { contractAddress: string }) => {
+const Game = ({ contractAddress }: { contractAddress: Address }) => {
   const { address: account } = useAccount();
   const { data: balance } = useBalance({
     address: account,

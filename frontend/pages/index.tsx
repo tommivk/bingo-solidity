@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useContractRead, useAccount, useContractEvent } from "wagmi";
+import { useContractRead, useAccount, useContractEvent, Address } from "wagmi";
 import { abi as BingoFactoryAbi } from "../abi/BingoFactory";
 import { BingoFactoryContractData } from "../types";
 import Button from "../components/Button";
@@ -15,14 +15,14 @@ import AccountButtons from "../components/AccountButtons";
 import NewGameForm from "../components/NewGameForm";
 
 const BINGO_FACTORY_ADDRESS =
-  process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "";
+  process.env.NEXT_PUBLIC_BINGO_FACTORY_ADDRESS ?? "0x00";
 const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
 
   const contractData: BingoFactoryContractData = {
-    address: BINGO_FACTORY_ADDRESS,
+    address: BINGO_FACTORY_ADDRESS as Address,
     abi: [...BingoFactoryAbi] as const,
   };
 

@@ -26,11 +26,11 @@ const bingoABI = narrow(BingoAbi);
 const bingoFactoryABI = narrow(BingoFactoryAbi);
 
 export type BingoContractData = {
-  address: string;
+  address: Address;
   abi: typeof bingoABI;
 };
 
 export type BingoFactoryContractData = {
-  address: string;
+  address: Address;
   abi: typeof bingoFactoryABI;
 };

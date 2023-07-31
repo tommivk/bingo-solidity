@@ -31,7 +31,7 @@ const useBingoContractEvents = ({
   useContractEvent({
     ...contractData,
     eventName: "PlayerLeft",
-    listener(player, _event) {
+    listener(player) {
       if (player !== account) {
         updateGameState();
         updateAllBingoCards();

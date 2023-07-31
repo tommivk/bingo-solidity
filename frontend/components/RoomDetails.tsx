@@ -5,9 +5,10 @@ import { BingoContractData } from "../types";
 import { abi as BingoContractAbi } from "../abi/Bingo";
 import Spinner from "./Spinner";
 import { gameStatusToString } from "../util";
+import { Address } from "wagmi";
 
 type Props = {
-  contractAddress: string;
+  contractAddress: Address;
 };
 
 const RoomDetails = ({ contractAddress }: Props) => {

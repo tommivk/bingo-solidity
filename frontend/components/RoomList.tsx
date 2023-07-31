@@ -13,7 +13,7 @@ const RoomList = ({ rooms }: Props) => {
         {rooms
           ?.slice(0)
           .reverse()
-          .map((contractAddress: string) => (
+          .map((contractAddress: Address) => (
             <li key={contractAddress} className="my-3">
               <RoomDetails contractAddress={contractAddress} />
             </li>
